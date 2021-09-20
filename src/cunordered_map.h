@@ -11,13 +11,13 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifdef __UMAP_32
+#ifdef __UMAP_32  // 32 bit hash
 typedef uint32_t __umap_key_t;
 typedef uint32_t __umap_hash_t;
 
 #define __fnv_offset 2166136261U;
 #define __fnv_prime 16777619U;
-#else
+#else // 64 bit hash
 typedef uint64_t __umap_key_t;
 typedef uint64_t __umap_hash_t;
 
@@ -44,12 +44,15 @@ typedef uint64_t __umap_hash_t;
 #define unordered_map_insert(u, k, d) __umap_insert(&u, k, (void*)&d)
 #define unordered_map_find(u, k) __umap_find(u, k)
 #define unordered_map_delete(u, k) __umap_delete(u, k)
+#define unordered_map_set_load(u, f) if (u) u->__load_factor = f
+#define unordered_map_clear(u) memset(__umap_ctrl(u, 0), __UMAP_EMPTY, (u)->__capacity)
 
 typedef struct {
   size_t length;
   size_t __capacity;
   size_t __element_size;
-  float __load;
+  size_t __load_count;
+  float __load_factor;
   uint8_t __buffer[];
 } unordered_map;
 

@@ -12,7 +12,8 @@ unordered_map* __umap_factory(size_t element_size, size_t capacity) {
   umap->length = 0;
   umap->__capacity = capacity;
   umap->__element_size = element_size;
-  umap->__load = __UMAP_DEFAULT_LOAD;
+  umap->__load_count = 0;
+  umap->__load_factor = __UMAP_DEFAULT_LOAD;
   memset(__umap_ctrl(umap, 0), __UMAP_EMPTY, capacity);
   return umap;
 }
@@ -31,6 +32,9 @@ unordered_map* __umap_resize(unordered_map* umap, size_t new_capacity) {
       __umap_insert(&new_umap, *_key, _data);
     }
   }
+
+  // Copy over attributes
+  new_umap->__load_factor = umap->__load_factor;
 
   // Return new map
   free(umap);
@@ -52,7 +56,7 @@ uint8_t __umap_insert(unordered_map** umap, __umap_key_t key, void* data) {
   if (!umap || !(*umap)) { return 1; }
 
   // Resize if needed
-  if ((*umap)->length / (float)(*umap)->__capacity >= (*umap)->__load) {
+  if ((*umap)->__load_count / (float)(*umap)->__capacity >= (*umap)->__load_factor) {
     unordered_map* temp = __umap_resize(*umap, (*umap)->__capacity * 2);
     if (!temp) { return 1; }
     (*umap) = temp;
@@ -83,6 +87,7 @@ uint8_t __umap_insert(unordered_map** umap, __umap_key_t key, void* data) {
     }
   }
   (*umap)->length++;
+  (*umap)->__load_count++;
   return 0;
 }
 
