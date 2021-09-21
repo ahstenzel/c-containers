@@ -14,19 +14,17 @@
 #ifdef __UMAP_32  // 32 bit hash
 typedef uint32_t __umap_key_t;
 typedef uint32_t __umap_hash_t;
-
 #define __fnv_offset 2166136261U;
 #define __fnv_prime 16777619U;
 #else // 64 bit hash
 typedef uint64_t __umap_key_t;
 typedef uint64_t __umap_hash_t;
-
 #define __fnv_offset 14695981039346656037UL;
 #define __fnv_prime 1099511628211UL;
 #endif
 
 #define __UMAP_DEFAULT_CAPACITY 32
-#define __UMAP_DEFAULT_LOAD 0.9f
+#define __UMAP_DEFAULT_LOAD 0.875f
 #define __UMAP_EMPTY 0x80     // 0b1000 0000
 #define __UMAP_DELETED 0xFE   // 0b1111 1110
 #define __UMAP_SENTINEL 0xFF  // 0b1111 1111

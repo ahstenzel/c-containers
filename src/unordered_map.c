@@ -1,9 +1,9 @@
-#include "cunordered_map.h"
+#include "unordered_map.h"
 
 size_t __umap_node_size(size_t element_size) {
   size_t key_size = sizeof(__umap_key_t);
   size_t size_max = element_size > key_size ? element_size : key_size;
-  return __align_to(element_size + key_size, size_max);
+  return (element_size + key_size + (size_max - 1)) & ~(size_max - 1);
 }
 
 unordered_map* __umap_factory(size_t element_size, size_t capacity) {

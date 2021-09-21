@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include "cvector.h"
-#include "cstack.h"
-#include "cunordered_map.h"
+#include "vector.h"
+#include "stack.h"
+#include "unordered_map.h"
+#include "lot.h"
 
 int main() {
   printf("__Vector__\n");
@@ -10,7 +11,7 @@ int main() {
     vector_push_back(myvec, i);
   }
   for (size_t i = 0; i < myvec->length; ++i) {
-    printf("%d: %d\n", i, vector_get(myvec, i, int));
+    printf("%zd: %d\n", i, vector_get(myvec, i, int));
   }
   vector_destroy(myvec);
 
@@ -43,7 +44,25 @@ int main() {
       printf("Key %d not found!\n", (int)keys[i]);
     }
   }
-  printf("Length: %d\n", mymap->length);
   unordered_map_destroy(mymap);
+
+  printf("__Lot__\n");
+  lot* mylot = lot_create(int);
+  uint64_t lkeys[40];
+  for (int i = 0; i < 40; ++i) {
+    lot_insert(mylot, &lkeys[i], i);
+  }
+  for (int i = 0; i < 40; ++i) {
+    void* data = lot_find(mylot, lkeys[i]);
+    if (data) {
+      int j = *(int*)data;
+      printf("%d: %d\n", (int)lkeys[i], (int)j);
+      lot_delete(mylot, lkeys[i]);
+    }
+    else {
+      printf("Key %d not found!\n", (int)lkeys[i]);
+    }
+  }
+  lot_destroy(mylot);
   return 0;
 }

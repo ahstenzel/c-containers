@@ -1,4 +1,4 @@
-#include "cstack.h"
+#include "stack.h"
 
 stack* __stack_factory(size_t element_size, size_t capacity) {
   stack* stk = malloc(offsetof(stack, __buffer) + (element_size * capacity));
