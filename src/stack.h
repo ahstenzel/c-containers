@@ -15,7 +15,7 @@
 #define stack_create(t) __stack_factory(sizeof(t), __STACK_DEFAULT_CAPACITY)
 #define stack_destroy(s) free(s)
 #define stack_head(s, t) *(t*)((s)->length > 0 ? (&(s)->__buffer[0] + ((s)->length - 1) * (s)->__element_size) : NULL)
-#define stack_push(s, d) __stack_insert(&s, (void*)&d)
+#define stack_push(s, d) __stack_insert(&s, (void*)d)
 #define stack_pop(s) __stack_remove(s, 1)
 #define stack_clear(s) __stack_remove(s, (s)->length)
 #define stack_max_length(s) 4294967295UL / ((s)->__element_size - 1)

@@ -152,3 +152,49 @@ void* __umap_find(unordered_map* umap, __umap_key_t key) {
     }
   }
 }
+
+umap_it_t* __umap_it(unordered_map* umap) {
+  // Error check
+  if (!umap) { return NULL; }
+
+  // Construct iterator
+  umap_it_t* it = malloc(sizeof(*it));
+  if (!it) { return NULL; }
+  it->__index = SIZE_MAX;
+  it->__umap = umap;
+  
+  // Find first valid entry in map
+  __umap_next(&it);
+  return it;
+}
+
+void __umap_next(umap_it_t** it) {
+  // Error check
+  if (!it | !(*it)) { return; }
+
+  // Find the next valid position in the array
+  uint8_t* ctrl = NULL;
+  unordered_map* umap = (*it)->__umap;
+  do {
+    // Increment index
+    (*it)->__index++;
+
+    // Reached the end of the array
+    if ((*it)->__index >= umap->__capacity) {
+      free(*it);
+      *it = NULL;
+      break;
+    }
+
+    // Evaluate control byte
+    ctrl = __umap_ctrl(umap, (*it)->__index);
+    if (!(*ctrl & __UMAP_EMPTY)) {
+      // Index contains data
+      (*it)->key = *__umap_node_key(umap, (*it)->__index);
+      (*it)->data = __umap_node_data(umap, (*it)->__index);
+      break;
+    }
+  } while(1);
+
+  return;
+}

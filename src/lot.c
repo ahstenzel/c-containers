@@ -54,9 +54,7 @@ uint8_t __lot_insert(lot** lt, __lot_key_t* key, void* data) {
 
   // Construct key
   if (key) {
-    __lot_key_t node_k = 0;
-    node_k = ((__lot_key_t)(*count_ref) << (sizeof(__lot_index_t) * 8)) | index;
-    *key = node_k;
+    *key = __lot_key(*count_ref, index);
   }
 
   // Copy data to node
@@ -70,8 +68,8 @@ void* __lot_find(lot* lt, __lot_key_t key) {
   if (!lt) { return NULL; }
 
   // Decompose key into count and index
-  uint8_t count = (uint8_t)(key >> (sizeof(__lot_index_t) * 8)) & 0x7F;
-  __lot_index_t index = key & ((1ULL << (sizeof(__lot_index_t) * 8)) - 1);
+  uint8_t count = __lot_key_count(key);
+  __lot_index_t index = __lot_key_index(key);
 
   // Check if high bit at metadata is set & the counts match
   uint8_t node_count = *__lot_node_ctrl(lt, index);
@@ -88,8 +86,8 @@ uint8_t __lot_delete(lot* lt, __lot_key_t key) {
   if (!lt) { return 1; }
 
   // Decompose key into count and index
-  uint8_t count = (uint8_t)(key >> (sizeof(__lot_index_t) * 8)) & 0x7F;
-  __lot_index_t index = key & ((1ULL << (sizeof(__lot_index_t) * 8)) - 1);
+  uint8_t count = __lot_key_count(key);
+  __lot_index_t index = __lot_key_index(key);
 
   // Check if high bit at metadata is set & the counts match
   uint8_t* node_count_ref = __lot_node_ctrl(lt, index);
@@ -104,4 +102,49 @@ uint8_t __lot_delete(lot* lt, __lot_key_t key) {
 
   // Either the index was empty or the keys count didnt match
   return 0;
+}
+
+lot_it_t* __lot_it(lot* lt) {
+  // Error check
+  if (!lt) { return NULL; }
+
+  // Construct iterator
+  lot_it_t* it = malloc(sizeof(*it));
+  if (!it) { return NULL; }
+  it->__index = SIZE_MAX;
+  it->__lot = lt;
+
+  // Find first valid entry in map
+  __lot_next(&it);
+  return it;
+}
+
+void __lot_next(lot_it_t** it) {
+  // Error check
+  if (!it || !(*it)) { return; }
+
+  // Find the next valid position in the array
+  uint8_t* ctrl = NULL;
+  lot* lt = (*it)->__lot;
+  do {
+    // Increment index
+    (*it)->__index++;
+
+    // Reached the end of the array
+    if ((*it)->__index >= lt->__capacity) {
+      free(*it);
+      *it = NULL;
+      break;
+    }
+
+    // Evaluate control byte
+    ctrl = __lot_node_ctrl(lt, (*it)->__index);
+    if (*ctrl & 0x80) {
+      // Index contains data
+      (*it)->data = __lot_node_data(lt, (*it)->__index);
+      break;
+    }
+  } while (1);
+
+  return;
 }

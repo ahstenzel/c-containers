@@ -8,7 +8,7 @@ int main() {
   printf("__Vector__\n");
   vector* myvec = vector_create(int);
   for (int i = 0; i < 10; ++i) {
-    vector_push_back(myvec, i);
+    vector_push_back(myvec, &i);
   }
   for (size_t i = 0; i < myvec->length; ++i) {
     printf("%zd: %d\n", i, vector_get(myvec, i, int));
@@ -18,7 +18,7 @@ int main() {
   printf("__Stack__\n");
   stack* mystack = stack_create(int);
   for (int i = 0; i < 10; ++i) {
-    stack_push(mystack, i);
+    stack_push(mystack, &i);
   }
   while (mystack->length > 0) {
     printf("%d\n", stack_head(mystack, int));
@@ -31,8 +31,9 @@ int main() {
   int keys[40];
   for (int i = 0; i < 40; ++i) {
     keys[i] = i + 1000;
-    unordered_map_insert(mymap, keys[i], i);
+    unordered_map_insert(mymap, keys[i], &i);
   }
+  /*
   for (int i = 0; i < 40; ++i) {
     void* data = unordered_map_find(mymap, keys[i]);
     if (data) {
@@ -43,6 +44,10 @@ int main() {
     else {
       printf("Key %d not found!\n", (int)keys[i]);
     }
+  }*/
+  for (umap_it_t* it = unordered_map_it(mymap); it; unordered_map_it_next(it)) {
+    int j = *(int*)(it->data);
+    printf("%d: %d\n", (int)it->key, j);
   }
   unordered_map_destroy(mymap);
 
@@ -50,8 +55,9 @@ int main() {
   lot* mylot = lot_create(int);
   uint64_t lkeys[40];
   for (int i = 0; i < 40; ++i) {
-    lot_insert(mylot, &lkeys[i], i);
+    lot_insert(mylot, &lkeys[i], &i);
   }
+  /*
   for (int i = 0; i < 40; ++i) {
     void* data = lot_find(mylot, lkeys[i]);
     if (data) {
@@ -62,6 +68,10 @@ int main() {
     else {
       printf("Key %d not found!\n", (int)lkeys[i]);
     }
+  }*/
+  for (lot_it_t* it = lot_it(mylot); it; lot_it_next(it)) {
+    int j = *(int*)(it->data);
+    printf("%d: %d\n", (int)it->__index, j);
   }
   lot_destroy(mylot);
   return 0;

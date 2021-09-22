@@ -15,9 +15,9 @@
 #define vector_create(t) __vec_factory(sizeof(t), __VECTOR_DEFAULT_CAPACITY)
 #define vector_destroy(v) free(v)
 #define vector_get(v, i, t) *(t*)((i < (v)->length && i >= 0) ? (&(v)->__buffer[0] + i * (v)->__element_size) : NULL)
-#define vector_set(v, i, d) if (i < (v)->length && i >= 0) memcpy((&(v)->__buffer[0] + i * (v)->__element_size), &d, (v)->__element_size)
-#define vector_push_back(v, d) __vec_insert(&v, (v)->length, (void*)&d)
-#define vector_push_front(v, d) __vec_insert(&v, 0, (void*)&d)
+#define vector_set(v, i, d) { if (i < (v)->length && i >= 0) memcpy((&(v)->__buffer[0] + i * (v)->__element_size), &d, (v)->__element_size) }
+#define vector_push_back(v, d) __vec_insert(&v, (v)->length, (void*)d)
+#define vector_push_front(v, d) __vec_insert(&v, 0, (void*)d)
 #define vector_pop_back(v) __vec_remove(v, (v)->length - 1, 1)
 #define vector_pop_front(v) __vec_remove(v, 0, 1)
 #define vector_clear(v) __vec_remove(v, 0, (v)->length)
