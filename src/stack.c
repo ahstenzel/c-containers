@@ -37,7 +37,7 @@ uint8_t __stack_insert(stack** stk, void* data) {
   }
 
   // Copy element
-  void* dest = (void*)(&(*stk)->__buffer[0] + (*stk)->length * (*stk)->__element_size);
+  void* dest = (void*)(__stack_pos(*stk, (*stk)->length));
   memcpy(dest, data, (*stk)->__element_size);
   (*stk)->length++;
   return 0;

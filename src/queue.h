@@ -12,7 +12,7 @@
 
 #define __QUEUE_DEFAULT_CAPACITY 32
 
-#define __queue_pos(q, i) &(q)->__buffer[0] + (i * (q)->__element_size)
+#define __queue_pos(q, i) &(q)->__buffer[0] + ((i) * (q)->__element_size)
 
 #define queue_create(t) __queue_factory(sizeof(t), __QUEUE_DEFAULT_CAPACITY)
 #define queue_destroy(q) free(q)

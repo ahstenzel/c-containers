@@ -39,14 +39,14 @@ uint8_t __vec_insert(vector** vec, size_t index, void* data) {
   
   // Shift over elements
   if (index < (*vec)->length) {
-    void* dest = (void*)(&(*vec)->__buffer[0] + (index + 1) * (*vec)->__element_size);
-    void* src = (void*)(&(*vec)->__buffer[0] + index * (*vec)->__element_size);
+    void* dest = (void*)(__vec_pos(*vec, index + 1));
+    void* src = (void*)(__vec_pos(*vec, index));
     if (!dest || !src) { return 1; }
     memmove(dest, src, (*vec)->__element_size * ((*vec)->length - index));
   }
   
   // Copy element
-  uint8_t* dest = (&(*vec)->__buffer[0] + index * (*vec)->__element_size);
+  uint8_t* dest = __vec_pos(*vec, index);
   memcpy(dest, data, (*vec)->__element_size);
   (*vec)->length++;
   return 0;
@@ -59,8 +59,8 @@ uint8_t __vec_remove(vector* vec, size_t index, size_t count) {
   
   // Shift over elements
   if (index < vec->length) {
-    void* src = (void*)(&vec->__buffer[0] + (index + count) * vec->__element_size);
-    void* dest = (void*)(&vec->__buffer[0] + index * vec->__element_size);
+    void* dest = (void*)(__vec_pos(vec, index + count));
+    void* src = (void*)(__vec_pos(vec, index));
     if (!dest || !src) { return 1; }
     memmove(dest, src, vec->__element_size * (vec->length - (index + count)));
   }
