@@ -1,5 +1,5 @@
 /*
- * cvector.h
+ * vector.h
  * Dynamically resizing array.
  */
 

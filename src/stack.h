@@ -1,6 +1,6 @@
 /*
- * cstack.h
- * LIFO stack of elements.
+ * stack.h
+ * LIFO group of elements.
  */
 
 #ifndef C_STACK_H

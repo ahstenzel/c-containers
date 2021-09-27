@@ -3,6 +3,7 @@
 #include "stack.h"
 #include "unordered_map.h"
 #include "lot.h"
+#include "queue.h"
 
 int main() {
   printf("__Vector__\n");
@@ -74,5 +75,22 @@ int main() {
     printf("%d: %d\n", (int)it->__index, j);
   }
   lot_destroy(mylot);
+
+  printf("__Queue__\n");
+  queue* myqueue = queue_create(int);
+  for (int i = 0; i < 15; ++i) {
+    queue_push(myqueue, &i);
+  }
+  for (int i = 0; i < 15; ++i) {
+    queue_pop(myqueue);
+  }
+  for (int i = 0; i < 40; ++i) {
+    queue_push(myqueue, &i);
+  }
+  for (int i = 0; i < 40; ++i) {
+    printf("%d\n", queue_head(myqueue, int));
+    queue_pop(myqueue);
+  }
+  queue_destroy(myqueue);
   return 0;
 }
