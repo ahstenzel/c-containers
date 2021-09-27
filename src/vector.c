@@ -1,7 +1,13 @@
 #include "vector.h"
 
+size_t __vec_buffer_size(size_t element_size, size_t capacity) {
+  size_t meta_size = sizeof(size_t);
+  size_t size_max = element_size > meta_size ? element_size : meta_size;
+  return ((element_size * capacity) + (size_max - 1)) & ~(size_max - 1);
+}
+
 vector* __vec_factory(size_t element_size, size_t capacity) {
-  vector* vec = malloc(offsetof(vector, __buffer) + (element_size * capacity));
+  vector* vec = malloc(offsetof(vector, __buffer) + __vec_buffer_size(element_size, capacity));
   if (!vec) { return NULL; }
   vec->length = 0;
   vec->__capacity = capacity;

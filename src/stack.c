@@ -1,7 +1,13 @@
 #include "stack.h"
 
+size_t __stack_buffer_size(size_t element_size, size_t capacity) {
+  size_t meta_size = sizeof(size_t);
+  size_t size_max = element_size > meta_size ? element_size : meta_size;
+  return ((element_size * capacity) + (size_max - 1)) & ~(size_max - 1);
+}
+
 stack* __stack_factory(size_t element_size, size_t capacity) {
-  stack* stk = malloc(offsetof(stack, __buffer) + (element_size * capacity));
+  stack* stk = malloc(offsetof(stack, __buffer) + __stack_buffer_size(element_size, capacity));
   if (!stk) { return NULL; }
   stk->length = 0;
   stk->__capacity = capacity;

@@ -30,7 +30,7 @@ typedef uint64_t __umap_hash_t;
 #define __UMAP_DELETED 0xFE   // 0b1111 1110
 #define __UMAP_SENTINEL 0xFF  // 0b1111 1111
 
-#define __align_to(x, y) (x + (y - 1)) & ~(y - 1)
+
 #define __umap_h1(h) h >> 7
 #define __umap_h2(h) h & 0x7F
 #define __umap_ctrl(u, i) (uint8_t*)(&(u)->__buffer[0] + i)
@@ -47,7 +47,7 @@ typedef uint64_t __umap_hash_t;
 #define unordered_map_clear(u) memset(__umap_ctrl(u, 0), __UMAP_EMPTY, (u)->__capacity)
 #define unordered_map_it(u) __umap_it(u)
 #define unordered_map_it_next(i) __umap_next(&i)
-#define unordered_map_rehash(u) { unordered_map* __umap_temp__ = __umap_resize(u, (u)->__capacity); if (__umap_temp__) u = __umap_temp__; }
+#define unordered_map_rehash(u) unordered_map* __umap_temp__ = __umap_resize(u, (u)->__capacity); if (__umap_temp__) u = __umap_temp__;
 
 typedef struct {
   size_t length;

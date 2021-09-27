@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#define __VECTOR_DEFAULT_CAPACITY 8
+#define __VECTOR_DEFAULT_CAPACITY 32
 
 #define vector_create(t) __vec_factory(sizeof(t), __VECTOR_DEFAULT_CAPACITY)
 #define vector_destroy(v) free(v)
@@ -21,8 +21,7 @@
 #define vector_pop_back(v) __vec_remove(v, (v)->length - 1, 1)
 #define vector_pop_front(v) __vec_remove(v, 0, 1)
 #define vector_clear(v) __vec_remove(v, 0, (v)->length)
-#define vector_max_length(v) 4294967295UL / ((v)->__element_size - 1)
-#define vector_bytes(v) offsetof(vector, __buffer) + ((v)->__element_size * (v)->__capacity)
+#define vector_bytes(v) (v) ? offsetof(vector, __buffer) + __vec_buffer_size((v)->__element_size, (v)->__capacity)) : 0
 
 typedef struct {
   size_t length;
@@ -30,6 +29,8 @@ typedef struct {
   size_t __element_size;
   uint8_t __buffer[];
 } vector;
+
+size_t __vec_buffer_size(size_t, size_t);
 
 vector* __vec_factory(size_t, size_t);
 
