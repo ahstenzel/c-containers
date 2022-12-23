@@ -9,11 +9,10 @@ size_t __umap_node_size(size_t element_size) {
 unordered_map* __umap_factory(size_t element_size, size_t capacity) {
   unordered_map* umap = malloc(offsetof(unordered_map, __buffer) + capacity + (__umap_node_size(element_size) * capacity));
   if (!umap) { return NULL; }
-  umap->length = 0;
+  umap->__length = 0;
   umap->__capacity = capacity;
   umap->__element_size = element_size;
   umap->__load_count = 0;
-  umap->__load_factor = __UMAP_DEFAULT_LOAD;
   memset(__umap_ctrl(umap, 0), __UMAP_EMPTY, capacity);
   return umap;
 }
@@ -32,9 +31,6 @@ unordered_map* __umap_resize(unordered_map* umap, size_t new_capacity) {
       __umap_insert(&new_umap, *_key, _data);
     }
   }
-
-  // Copy over attributes
-  new_umap->__load_factor = umap->__load_factor;
 
   // Return new map
   free(umap);
@@ -56,7 +52,7 @@ uint8_t __umap_insert(unordered_map** umap, __umap_key_t key, void* data) {
   if (!umap || !(*umap)) { return 1; }
 
   // Resize if needed
-  if ((*umap)->__load_count / (float)(*umap)->__capacity >= (*umap)->__load_factor) {
+  if ((*umap)->__load_count / (float)(*umap)->__capacity >= __UMAP_DEFAULT_LOAD) {
     unordered_map* temp = __umap_resize(*umap, (*umap)->__capacity * 2);
     if (!temp) { return 1; }
     (*umap) = temp;
@@ -86,7 +82,7 @@ uint8_t __umap_insert(unordered_map** umap, __umap_key_t key, void* data) {
       pos = (pos + 1) & ((*umap)->__capacity - 1);
     }
   }
-  (*umap)->length++;
+  (*umap)->__length++;
   (*umap)->__load_count++;
   return 0;
 }
@@ -108,7 +104,7 @@ uint8_t __umap_delete(unordered_map* umap, __umap_key_t key) {
       // Verify key at this pos matches
       if (key == *(__umap_node_key(umap, pos))) {
         memset(ctrl, __UMAP_DELETED, 1);
-        umap->length--;
+        umap->__length--;
         return 0;
       }
     }

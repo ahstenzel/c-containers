@@ -24,7 +24,7 @@ typedef uint64_t __umap_hash_t;
 #define __fnv_prime 1099511628211UL;
 #endif
 
-#define __UMAP_DEFAULT_CAPACITY 32
+#define __UMAP_DEFAULT_CAPACITY 8
 #define __UMAP_DEFAULT_LOAD 0.875f
 #define __UMAP_EMPTY 0x80     // 0b1000 0000
 #define __UMAP_DELETED 0xFE   // 0b1111 1110
@@ -43,18 +43,16 @@ typedef uint64_t __umap_hash_t;
 #define unordered_map_insert(u, k, d) __umap_insert(&u, k, (void*)d)
 #define unordered_map_find(u, k) __umap_find(u, k)
 #define unordered_map_delete(u, k) __umap_delete(u, k)
-#define unordered_map_set_load(u, f) { if (u) u->__load_factor = f; }
+#define unordered_map_size(u) (u)->__length
 #define unordered_map_clear(u) memset(__umap_ctrl(u, 0), __UMAP_EMPTY, (u)->__capacity)
 #define unordered_map_it(u) __umap_it(u)
 #define unordered_map_it_next(i) __umap_next(&i)
-#define unordered_map_rehash(u) unordered_map* __umap_temp__ = __umap_resize(u, (u)->__capacity); if (__umap_temp__) u = __umap_temp__;
 
 typedef struct {
-  size_t length;
+  size_t __length;
   size_t __capacity;
   size_t __element_size;
   size_t __load_count;
-  float __load_factor;
   uint8_t __buffer[];
 } unordered_map;
 

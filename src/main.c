@@ -11,7 +11,7 @@ int main() {
   for (int i = 0; i < 10; ++i) {
     vector_push_back(myvec, &i);
   }
-  for (size_t i = 0; i < myvec->length; ++i) {
+  for (size_t i = 0; i < vector_size(myvec); ++i) {
     printf("%zd: %d\n", i, vector_get(myvec, i, int));
   }
   vector_destroy(myvec);
@@ -21,7 +21,7 @@ int main() {
   for (int i = 0; i < 10; ++i) {
     stack_push(mystack, &i);
   }
-  while (mystack->length > 0) {
+  while (stack_size(mystack) > 0) {
     printf("%d\n", stack_head(mystack, int));
     stack_pop(mystack);
   }

@@ -10,20 +10,21 @@
 #include <stdint.h>
 #include <string.h>
 
-#define __QUEUE_DEFAULT_CAPACITY 32
+#define __QUEUE_DEFAULT_CAPACITY 1
 
 #define __queue_pos(q, i) &(q)->__buffer[0] + ((i) * (q)->__element_size)
 
 #define queue_create(t) __queue_factory(sizeof(t), __QUEUE_DEFAULT_CAPACITY)
 #define queue_destroy(q) free(q)
-#define queue_head(q, t) *(t*)((q)->length > 0 ? __queue_pos(q, (q)->__head) : NULL)
+#define queue_head(q, t) *(t*)((q)->__length > 0 ? __queue_pos(q, (q)->__head) : NULL)
 #define queue_push(q, d) __queue_insert(&q, (void*)d)
 #define queue_pop(q) __queue_remove(q, 1)
-#define queue_clear(q) __queue_remove(q, (q)->length)
-#define queue_bytes(q) (q) ? offsetof(queue, __buffer) + __queue_buffer_size((q)->__element_size, (q)->__capacity)) : 0
+#define queue_size(q) (q)->__length
+#define queue_clear(q) __queue_remove(q, (q)->__length)
+#define queue_bytes(q) (q) ? (offsetof(queue, __buffer) + __queue_buffer_size((q)->__element_size, (q)->__capacity)) : 0
 
 typedef struct {
-  size_t length;
+  size_t __length;
   size_t __head;
   size_t __tail;
   size_t __capacity;

@@ -4,7 +4,7 @@ lot* __lot_factory(size_t element_size, size_t capacity) {
   // Construct object
   lot* lt = malloc(offsetof(lot, __buffer) + (sizeof(__lot_key_t) * capacity) + (__lot_node_size(element_size) * capacity));
   if (!lt) { return NULL; }
-  lt->length = 0;
+  lt->__length = 0;
   lt->__capacity = capacity;
   lt->__element_size = element_size;
   lt->__stack_head = 0;
@@ -20,8 +20,8 @@ lot* __lot_resize(lot* lt, size_t new_capacity) {
   // Create new lot & copy data to it
   lot* new_lt = __lot_factory(lt->__element_size, new_capacity);
   if (!new_lt) { return NULL; }
-  memcpy(__lot_node_ctrl(new_lt, 0), __lot_node_ctrl(lt, 0), __lot_node_size(lt->__element_size) * lt->length);
-  new_lt->length = lt->length;
+  memcpy(__lot_node_ctrl(new_lt, 0), __lot_node_ctrl(lt, 0), __lot_node_size(lt->__element_size) * lt->__length);
+  new_lt->__length = lt->__length;
   new_lt->__stack_head = lt->__stack_head;
   
   // Push new array entries
@@ -37,7 +37,7 @@ uint8_t __lot_insert(lot** lt, __lot_key_t* key, void* data) {
   if (!lt || !(*lt)) { return 1; }
 
   // Resize if needed
-  if ((*lt)->length >= (*lt)->__capacity) {
+  if ((*lt)->__length >= (*lt)->__capacity) {
     lot* temp = __lot_resize(*lt, (*lt)->__capacity * 2);
     if (!temp) { return 1; }
     (*lt) = temp;
@@ -59,7 +59,7 @@ uint8_t __lot_insert(lot** lt, __lot_key_t* key, void* data) {
 
   // Copy data to node
   memcpy(__lot_node_data(*lt, index), data, (*lt)->__element_size);
-  (*lt)->length++;
+  (*lt)->__length++;
   return 0;
 }
 
@@ -97,7 +97,7 @@ uint8_t __lot_delete(lot* lt, __lot_key_t key) {
 
     // Push index back onto the stack
     __lot_stack_push(lt, index);
-    lt->length--;
+    lt->__length--;
   }
 
   // Either the index was empty or the keys count didnt match

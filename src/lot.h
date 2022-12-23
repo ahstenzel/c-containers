@@ -18,7 +18,7 @@ typedef uint64_t __lot_key_t;
 typedef uint32_t __lot_index_t;
 #endif
 
-#define __LOT_DEFAULT_CAPACITY 32
+#define __LOT_DEFAULT_CAPACITY 8
 
 #define __lot_stack_head(l) (__lot_index_t*)(&(l)->__buffer[0] + (sizeof(__lot_index_t) * (l)->__stack_head))
 #define __lot_stack_push(l, n) memcpy(__lot_stack_head(l), &n, sizeof(__lot_index_t)); (l)->__stack_head++
@@ -36,11 +36,12 @@ typedef uint32_t __lot_index_t;
 #define lot_insert(l, k, d) __lot_insert(&l, (__lot_key_t*)k, (void*)d)
 #define lot_find(l, k) __lot_find(l, k)
 #define lot_delete(l, k) __lot_delete(l, k)
+#define lot_size(l) (l)->__length
 #define lot_it(l) __lot_it(l)
 #define lot_it_next(i) __lot_next(&i)
 
 typedef struct {
-  size_t length;
+  size_t __length;
   size_t __capacity;
   size_t __element_size;
   size_t __stack_head;
