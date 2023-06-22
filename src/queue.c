@@ -1,69 +1,69 @@
 #include "queue.h"
 
-size_t __queue_buffer_size(size_t element_size, size_t capacity) {
+size_t _queue_buffer_size(size_t element_size, size_t capacity) {
   size_t meta_size = sizeof(size_t);
   size_t size_max = element_size > meta_size ? element_size : meta_size;
   return ((element_size * capacity) + (size_max - 1)) & ~(size_max - 1);
 }
 
-queue* __queue_factory(size_t element_size, size_t capacity) {
-  queue* qu = malloc(offsetof(queue, __buffer) + __queue_buffer_size(element_size, capacity));
+queue* _queue_factory(size_t element_size, size_t capacity) {
+  queue* qu = malloc(offsetof(queue, _buffer) + _queue_buffer_size(element_size, capacity));
   if (!qu) { return NULL; }
-  qu->__length = 0;
-  qu->__head = 0;
-  qu->__tail = 0;
-  qu->__capacity = capacity;
-  qu->__element_size = element_size;
+  qu->_length = 0;
+  qu->_head = 0;
+  qu->_tail = 0;
+  qu->_capacity = capacity;
+  qu->_element_size = element_size;
   return qu;
 }
 
-queue* __queue_resize(queue* qu, size_t new_capacity) {
+queue* _queue_resize(queue* qu, size_t new_capacity) {
   // Create new queue & copy data to it
-  queue* new_qu = __queue_factory(qu->__element_size, new_capacity);
+  queue* new_qu = _queue_factory(qu->_element_size, new_capacity);
   if (!new_qu) { return NULL; }
-  if (qu->__tail <= qu->__head) {
+  if (qu->_tail <= qu->_head) {
     // Queue wraps around circular buffer, copy in two parts
-    size_t __qu_end = (qu->__capacity - qu->__head);
-    memcpy(__queue_pos(new_qu, 0), __queue_pos(qu, qu->__head), __qu_end * qu->__element_size);
-    memcpy(__queue_pos(new_qu, __qu_end), __queue_pos(qu, 0), (qu->__length - __qu_end) * qu->__element_size);
+    size_t _qu_end = (qu->_capacity - qu->_head);
+    memcpy(_queue_pos(new_qu, 0), _queue_pos(qu, qu->_head), _qu_end * qu->_element_size);
+    memcpy(_queue_pos(new_qu, _qu_end), _queue_pos(qu, 0), (qu->_length - _qu_end) * qu->_element_size);
   }
   else {
     // Queue is contained in circular buffer, one copy will get everything
-    memcpy(new_qu->__buffer, __queue_pos(qu, qu->__head), qu->__length * qu->__element_size);
+    memcpy(new_qu->_buffer, _queue_pos(qu, qu->_head), qu->_length * qu->_element_size);
   }
-  new_qu->__head = 0;
-  new_qu->__tail = qu->__length;
-  new_qu->__length = qu->__length;
+  new_qu->_head = 0;
+  new_qu->_tail = qu->_length;
+  new_qu->_length = qu->_length;
   free(qu);
   return new_qu;
 }
 
-uint8_t __queue_insert(queue** qu, void* data) {
+bool _queue_insert(queue** qu, void* data) {
   // Error check
-  if (!qu || !(*qu)) { return 1; }
+  if (!qu || !(*qu)) { return false; }
 
   // Resize container
-  if ((*qu)->__length >= (*qu)->__capacity) {
-    queue* temp = __queue_resize(*qu, (*qu)->__capacity * 2);
-    if (!temp) { return 1; }
+  if ((*qu)->_length >= (*qu)->_capacity) {
+    queue* temp = _queue_resize(*qu, (*qu)->_capacity * 2);
+    if (!temp) { return false; }
     (*qu) = temp;
   }
 
   // Append to tail
-  void* dest = __queue_pos(*qu, (*qu)->__tail);
-  memcpy(dest, data, (*qu)->__element_size);
-  (*qu)->__tail = ((*qu)->__tail + 1) % (*qu)->__capacity;
-  (*qu)->__length++;
-  return 0;
+  void* dest = _queue_pos(*qu, (*qu)->_tail);
+  memcpy(dest, data, (*qu)->_element_size);
+  (*qu)->_tail = ((*qu)->_tail + 1) % (*qu)->_capacity;
+  (*qu)->_length++;
+  return true;
 }
 
-uint8_t __queue_remove(queue* qu, size_t count) {
+bool _queue_remove(queue* qu, size_t count) {
   // Error check
-  if (!qu) { return 1; }
+  if (!qu || qu->_length < count) { return false; }
 
   // Increment head
-  size_t new_head = (qu->__head + count) % qu->__capacity;
-  qu->__head = (qu->__head <= qu->__tail && new_head > qu->__tail) ? qu->__tail : new_head;
-  qu->__length = (count > qu->__length) ? 0 : (qu->__length - count);
-  return 0;
+  size_t new_head = (qu->_head + count) % qu->_capacity;
+  qu->_head = (qu->_head <= qu->_tail && new_head > qu->_tail) ? qu->_tail : new_head;
+  qu->_length -= count;
+  return true;
 }

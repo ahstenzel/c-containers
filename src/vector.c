@@ -1,71 +1,71 @@
 #include "vector.h"
 
-size_t __vec_buffer_size(size_t element_size, size_t capacity) {
+size_t _vec_buffer_size(size_t element_size, size_t capacity) {
   size_t meta_size = sizeof(size_t);
   size_t size_max = element_size > meta_size ? element_size : meta_size;
   return ((element_size * capacity) + (size_max - 1)) & ~(size_max - 1);
 }
 
-vector* __vec_factory(size_t element_size, size_t capacity) {
-  vector* vec = malloc(offsetof(vector, __buffer) + __vec_buffer_size(element_size, capacity));
+vector* _vec_factory(size_t element_size, size_t capacity) {
+  vector* vec = malloc(offsetof(vector, _buffer) + _vec_buffer_size(element_size, capacity));
   if (!vec) { return NULL; }
-  vec->__length = 0;
-  vec->__capacity = capacity;
-  vec->__element_size = element_size;
+  vec->_length = 0;
+  vec->_capacity = capacity;
+  vec->_element_size = element_size;
   return vec;
 }
 
-vector* __vec_resize(vector* vec, size_t new_capacity) {
+vector* _vec_resize(vector* vec, size_t new_capacity) {
   // Create new vector & copy data to it
-  vector* new_vec = __vec_factory(vec->__element_size, new_capacity);
+  vector* new_vec = _vec_factory(vec->_element_size, new_capacity);
   if (!new_vec) { return NULL; }
-  memcpy(new_vec->__buffer, vec->__buffer, vec->__element_size * vec->__length);
-  new_vec->__length = vec->__length;
+  memcpy(new_vec->_buffer, vec->_buffer, vec->_element_size * vec->_length);
+  new_vec->_length = vec->_length;
   free(vec);
   return new_vec;
 }
 
-uint8_t __vec_insert(vector** vec, size_t index, void* data) {
+bool _vec_insert(vector** vec, size_t index, void* data) {
   // Error check
-  if (!vec || !(*vec)) { return 1; }
-  if (index < 0 || index > ((*vec)->__length + 1)) { return 1; }
+  if (!vec || !(*vec)) { return false; }
+  if (index < 0 || index > ((*vec)->_length + 1)) { return false; }
 
   // Resize container
-  if ((*vec)->__length >= (*vec)->__capacity) {
-    vector* temp = __vec_resize(*vec, (*vec)->__capacity * 2);
-    if (!temp) { return 1; }
+  if ((*vec)->_length >= (*vec)->_capacity) {
+    vector* temp = _vec_resize(*vec, (*vec)->_capacity * 2);
+    if (!temp) { return false; }
     (*vec) = temp;
   }
   
   // Shift over elements
-  if (index < (*vec)->__length) {
-    void* dest = (void*)(__vec_pos(*vec, index + 1));
-    void* src = (void*)(__vec_pos(*vec, index));
-    if (!dest || !src) { return 1; }
-    memmove(dest, src, (*vec)->__element_size * ((*vec)->__length - index));
+  if (index < (*vec)->_length) {
+    void* dest = (void*)(_vec_pos(*vec, index + 1));
+    void* src = (void*)(_vec_pos(*vec, index));
+    if (!dest || !src) { return false; }
+    memmove(dest, src, (*vec)->_element_size * ((*vec)->_length - index));
   }
   
   // Copy element
-  uint8_t* dest = __vec_pos(*vec, index);
-  memcpy(dest, data, (*vec)->__element_size);
-  (*vec)->__length++;
-  return 0;
+  uint8_t* dest = _vec_pos(*vec, index);
+  memcpy(dest, data, (*vec)->_element_size);
+  (*vec)->_length++;
+  return true;
 }
 
-uint8_t __vec_remove(vector* vec, size_t index, size_t count) {
+bool _vec_remove(vector* vec, size_t index, size_t count) {
   // Error check
-  if (!vec) { return 1; }
-  if ((index + count) >= vec->__length) { return 1; }
+  if (!vec) { return false; }
+  if ((index + count) >= vec->_length) { return false; }
   
   // Shift over elements
-  if (index < vec->__length) {
-    void* dest = (void*)(__vec_pos(vec, index + count));
-    void* src = (void*)(__vec_pos(vec, index));
-    if (!dest || !src) { return 1; }
-    memmove(dest, src, vec->__element_size * (vec->__length - (index + count)));
+  if (index < vec->_length) {
+    void* dest = (void*)(_vec_pos(vec, index + count));
+    void* src = (void*)(_vec_pos(vec, index));
+    if (!dest || !src) { return false; }
+    memmove(dest, src, vec->_element_size * (vec->_length - (index + count)));
   }
 
-  // Decrement __length
-  vec->__length -= count;
-  return 0;
+  // Decrement _length
+  vec->_length -= count;
+  return true;
 }

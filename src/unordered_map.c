@@ -1,34 +1,34 @@
 #include "unordered_map.h"
 
-size_t __umap_node_size(size_t element_size) {
-  size_t key_size = sizeof(__umap_key_t);
+size_t _umap_node_size(size_t element_size) {
+  size_t key_size = sizeof(_umap_key_t);
   size_t size_max = element_size > key_size ? element_size : key_size;
   return (element_size + key_size + (size_max - 1)) & ~(size_max - 1);
 }
 
-unordered_map* __umap_factory(size_t element_size, size_t capacity) {
-  unordered_map* umap = malloc(offsetof(unordered_map, __buffer) + capacity + (__umap_node_size(element_size) * capacity));
+unordered_map* _umap_factory(size_t element_size, size_t capacity) {
+  unordered_map* umap = malloc(offsetof(unordered_map, _buffer) + capacity + (_umap_node_size(element_size) * capacity));
   if (!umap) { return NULL; }
-  umap->__length = 0;
-  umap->__capacity = capacity;
-  umap->__element_size = element_size;
-  umap->__load_count = 0;
-  memset(__umap_ctrl(umap, 0), __UMAP_EMPTY, capacity);
+  umap->_length = 0;
+  umap->_capacity = capacity;
+  umap->_element_size = element_size;
+  umap->_load_count = 0;
+  memset(_umap_ctrl(umap, 0), _UMAP_EMPTY, capacity);
   return umap;
 }
 
-unordered_map* __umap_resize(unordered_map* umap, size_t new_capacity) {
+unordered_map* _umap_resize(unordered_map* umap, size_t new_capacity) {
   // Create new map
-  unordered_map* new_umap = __umap_factory(umap->__element_size, new_capacity);
+  unordered_map* new_umap = _umap_factory(umap->_element_size, new_capacity);
   if (!new_umap) { return NULL; }
 
   // Rehash data
-  for (size_t i = 0; i < umap->__capacity; ++i) {
-    uint8_t* ctrl = __umap_ctrl(umap, i);
-    if (!((*ctrl) & __UMAP_EMPTY)) {
-      __umap_key_t* _key = __umap_node_key(umap, i);
-      void* _data = __umap_node_data(umap, i);
-      __umap_insert(&new_umap, *_key, _data);
+  for (size_t i = 0; i < umap->_capacity; ++i) {
+    uint8_t* ctrl = _umap_ctrl(umap, i);
+    if (!((*ctrl) & _UMAP_EMPTY)) {
+      _umap_key_t* _key = _umap_node_key(umap, i);
+      void* _data = _umap_node_data(umap, i);
+      _umap_insert(&new_umap, *_key, _data);
     }
   }
 
@@ -37,157 +37,157 @@ unordered_map* __umap_resize(unordered_map* umap, size_t new_capacity) {
   return new_umap;
 }
 
-__umap_hash_t __umap_hash(__umap_key_t key) {
+_umap_hash_t _umap_hash(_umap_key_t key) {
   // Hash using basic FNV-1a implementation
-  __umap_hash_t hash = __fnv_offset;
-  for (size_t i = 0; i < sizeof(__umap_key_t); ++i) {
+  _umap_hash_t hash = _fnv_offset;
+  for (size_t i = 0; i < sizeof(_umap_key_t); ++i) {
     hash ^= ((key >> (i * 8)) & 0xFF);
-    hash *= __fnv_prime;
+    hash *= _fnv_prime;
   }
   return hash;
 }
 
-uint8_t __umap_insert(unordered_map** umap, __umap_key_t key, void* data) {
+bool _umap_insert(unordered_map** umap, _umap_key_t key, void* data) {
   // Error check
-  if (!umap || !(*umap)) { return 1; }
+  if (!umap || !(*umap)) { return false; }
 
   // Resize if needed
-  if ((*umap)->__load_count / (float)(*umap)->__capacity >= __UMAP_DEFAULT_LOAD) {
-    unordered_map* temp = __umap_resize(*umap, (*umap)->__capacity * 2);
-    if (!temp) { return 1; }
+  if ((*umap)->_load_count / (float)(*umap)->_capacity >= _UMAP_DEFAULT_LOAD) {
+    unordered_map* temp = _umap_resize(*umap, (*umap)->_capacity * 2);
+    if (!temp) { return false; }
     (*umap) = temp;
   }
 
   // Hash the key
-  __umap_hash_t h = __umap_hash(key);
-  size_t pos = __umap_h1(h) & ((*umap)->__capacity - 1);
+  _umap_hash_t h = _umap_hash(key);
+  size_t pos = _umap_h1(h) & ((*umap)->_capacity - 1);
 
   // Linear probe to find an empty bucket
   while (1) {
-    uint8_t* ctrl = __umap_ctrl(*umap, pos);
+    uint8_t* ctrl = _umap_ctrl(*umap, pos);
     // Space is empty if high bit is 1
-    if ((*ctrl) & __UMAP_EMPTY) {
+    if ((*ctrl) & _UMAP_EMPTY) {
       // Save lower 8 bits of hash to the control block
-      __umap_hash_t h2 = __umap_h2(h);
+      _umap_hash_t h2 = _umap_h2(h);
       memcpy(ctrl, &h2, 1);
 
       // Save the key to the start of the node block
-      memcpy(__umap_node_key(*umap, pos), &key, sizeof(key));
+      memcpy(_umap_node_key(*umap, pos), &key, sizeof(key));
 
       // Save the data to the end of the node block, aligned by the larger data type
-      memcpy(__umap_node_data(*umap, pos), data, (*umap)->__element_size);
+      memcpy(_umap_node_data(*umap, pos), data, (*umap)->_element_size);
       break;
     }
     else {
-      pos = (pos + 1) & ((*umap)->__capacity - 1);
+      pos = (pos + 1) & ((*umap)->_capacity - 1);
     }
   }
-  (*umap)->__length++;
-  (*umap)->__load_count++;
-  return 0;
+  (*umap)->_length++;
+  (*umap)->_load_count++;
+  return true;
 }
 
-uint8_t __umap_delete(unordered_map* umap, __umap_key_t key) {
+bool _umap_delete(unordered_map* umap, _umap_key_t key) {
   // Error check
-  if (!umap) { return 1; }
+  if (!umap) { return false; }
 
   // Hash key again
-  __umap_hash_t h = __umap_hash(key);
-  size_t pos = __umap_h1(h) & (umap->__capacity - 1);
+  _umap_hash_t h = _umap_hash(key);
+  size_t pos = _umap_h1(h) & (umap->_capacity - 1);
 
   // Linear probe to find key
   while (1) {
-    uint8_t* ctrl = __umap_ctrl(umap, pos);
+    uint8_t* ctrl = _umap_ctrl(umap, pos);
     // Check if this control byte matches lower byte of hash
-    __umap_hash_t h2 = __umap_h2(h);
+    _umap_hash_t h2 = _umap_h2(h);
     if (*ctrl == h2) {
       // Verify key at this pos matches
-      if (key == *(__umap_node_key(umap, pos))) {
-        memset(ctrl, __UMAP_DELETED, 1);
-        umap->__length--;
-        return 0;
+      if (key == *(_umap_node_key(umap, pos))) {
+        memset(ctrl, _UMAP_DELETED, 1);
+        umap->_length--;
+        return true;
       }
     }
-    else if (*ctrl == __UMAP_EMPTY) {
+    else if (*ctrl == _UMAP_EMPTY) {
       // Empty slot marks the end of the bucket chain
-      return 0;
+      return true;
     }
     else {
       // Look at next control byte
-      pos = (pos + 1) & (umap->__capacity - 1);
+      pos = (pos + 1) & (umap->_capacity - 1);
     }
   }
 }
 
-void* __umap_find(unordered_map* umap, __umap_key_t key) {
+void* _umap_find(unordered_map* umap, _umap_key_t key) {
   // Error check
   if (!umap) { return NULL; }
 
   // Hash key again
-  __umap_hash_t h = __umap_hash(key);
-  size_t pos = __umap_h1(h) & (umap->__capacity - 1);
+  _umap_hash_t h = _umap_hash(key);
+  size_t pos = _umap_h1(h) & (umap->_capacity - 1);
 
   // Linear probe to find key
   while (1) {
-    uint8_t* ctrl = __umap_ctrl(umap, pos);
+    uint8_t* ctrl = _umap_ctrl(umap, pos);
     // Check if this control byte matches lower byte of hash
-    __umap_hash_t h2 = __umap_h2(h);
+    _umap_hash_t h2 = _umap_h2(h);
     if (*ctrl == h2) {
       // Verify key at this pos matches
-      if (key == *(__umap_node_key(umap, pos))) {
-        return __umap_node_data(umap, pos);
+      if (key == *(_umap_node_key(umap, pos))) {
+        return _umap_node_data(umap, pos);
       }
     }
-    else if (*ctrl == __UMAP_EMPTY) {
+    else if (*ctrl == _UMAP_EMPTY) {
       // Empty slot marks the end of the bucket chain
       return NULL;
     }
     else {
       // Look at next control byte
-      pos = (pos + 1) & (umap->__capacity - 1);
+      pos = (pos + 1) & (umap->_capacity - 1);
     }
   }
 }
 
-umap_it_t* __umap_it(unordered_map* umap) {
+umap_it_t* _umap_it(unordered_map* umap) {
   // Error check
   if (!umap) { return NULL; }
 
   // Construct iterator
   umap_it_t* it = malloc(sizeof(*it));
   if (!it) { return NULL; }
-  it->__index = SIZE_MAX;
-  it->__umap = umap;
+  it->_index = SIZE_MAX;
+  it->_umap = umap;
   
   // Find first valid entry in map
-  __umap_next(&it);
+  _umap_next(&it);
   return it;
 }
 
-void __umap_next(umap_it_t** it) {
+void _umap_next(umap_it_t** it) {
   // Error check
   if (!it | !(*it)) { return; }
 
   // Find the next valid position in the array
   uint8_t* ctrl = NULL;
-  unordered_map* umap = (*it)->__umap;
+  unordered_map* umap = (*it)->_umap;
   do {
     // Increment index
-    (*it)->__index++;
+    (*it)->_index++;
 
     // Reached the end of the array
-    if ((*it)->__index >= umap->__capacity) {
+    if ((*it)->_index >= umap->_capacity) {
       free(*it);
       *it = NULL;
       break;
     }
 
     // Evaluate control byte
-    ctrl = __umap_ctrl(umap, (*it)->__index);
-    if (!(*ctrl & __UMAP_EMPTY)) {
+    ctrl = _umap_ctrl(umap, (*it)->_index);
+    if (!(*ctrl & _UMAP_EMPTY)) {
       // Index contains data
-      (*it)->key = *__umap_node_key(umap, (*it)->__index);
-      (*it)->data = __umap_node_data(umap, (*it)->__index);
+      (*it)->key = *_umap_node_key(umap, (*it)->_index);
+      (*it)->data = _umap_node_data(umap, (*it)->_index);
       break;
     }
   } while(1);

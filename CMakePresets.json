@@ -1,0 +1,59 @@
+﻿{
+	"version": 2,
+	"configurePresets": [
+		{
+			"name": "default-static",
+			"hidden": true,
+			"description": "Build static linked library.",
+			"binaryDir": "${sourceDir}/out/build/${presetName}",
+			"cacheVariables": {
+				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+			}
+		},
+		{
+			"name": "default-windows",
+			"hidden": true,
+			"description": "Build win64 target.",
+			"architecture": {
+				"value": "x64"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		},
+		{
+			"name": "linux-static",
+			"displayName": "Linux Static Library",
+			"description": "Target Linux with a gcc environment.",
+			"inherits": "default-static",
+			"generator": "Unix Makefiles"
+		},
+		{
+			"name": "windows-static",
+			"displayName": "Windows Static Library",
+			"description": "Target Windows with a Visual Studio environment.",
+			"inherits": ["default-static", "default-windows"],
+			"generator": "Visual Studio 17 2022"
+		}
+	],
+  	"buildPresets": [
+		{
+			"name": "windows-static-debug",
+			"displayName": "Windows Static Library (Debug)",
+			"description": "Build with Debug configuration.",
+			"configuration": "Debug",
+			"configurePreset": "windows-static"
+		},
+		{
+			"name": "windows-static-release",
+			"displayName": "Windows Static Library",
+			"description": "Build with Release configuration.",
+			"configuration": "Release",
+			"configurePreset": "windows-static"
+		}
+	]
+}

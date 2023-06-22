@@ -34,18 +34,6 @@ int main() {
     keys[i] = i + 1000;
     unordered_map_insert(mymap, keys[i], &i);
   }
-  /*
-  for (int i = 0; i < 40; ++i) {
-    void* data = unordered_map_find(mymap, keys[i]);
-    if (data) {
-      int j = *(int*)data;
-      printf("%d: %d\n", (int)keys[i], (int)j);
-      unordered_map_delete(mymap, keys[i]);
-    }
-    else {
-      printf("Key %d not found!\n", (int)keys[i]);
-    }
-  }*/
   for (umap_it_t* it = unordered_map_it(mymap); it; unordered_map_it_next(it)) {
     int j = *(int*)(it->data);
     printf("%d: %d\n", (int)it->key, j);
@@ -58,18 +46,6 @@ int main() {
   for (int i = 0; i < 40; ++i) {
     lot_insert(mylot, &lkeys[i], &i);
   }
-  /*
-  for (int i = 0; i < 40; ++i) {
-    void* data = lot_find(mylot, lkeys[i]);
-    if (data) {
-      int j = *(int*)data;
-      printf("%d: %d\n", (int)lkeys[i], (int)j);
-      lot_delete(mylot, lkeys[i]);
-    }
-    else {
-      printf("Key %d not found!\n", (int)lkeys[i]);
-    }
-  }*/
   for (lot_it_t* it = lot_it(mylot); it; lot_it_next(it)) {
     int j = *(int*)(it->data);
     printf("%d: %d\n", (int)it->__index, j);
