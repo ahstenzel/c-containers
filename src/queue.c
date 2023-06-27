@@ -7,11 +7,10 @@ size_t _queue_buffer_size(size_t element_size, size_t capacity) {
 }
 
 queue* _queue_factory(size_t element_size, size_t capacity) {
-  queue* qu = malloc(offsetof(queue, _buffer) + _queue_buffer_size(element_size, capacity));
+  size_t buffer_size = offsetof(queue, _buffer) + _queue_buffer_size(element_size, capacity);
+  queue* qu = malloc(buffer_size);
   if (!qu) { return NULL; }
-  qu->_length = 0;
-  qu->_head = 0;
-  qu->_tail = 0;
+  memset(qu, 0, buffer_size);
   qu->_capacity = capacity;
   qu->_element_size = element_size;
   return qu;
@@ -24,12 +23,15 @@ queue* _queue_resize(queue* qu, size_t new_capacity) {
   if (qu->_tail <= qu->_head) {
     // Queue wraps around circular buffer, copy in two parts
     size_t _qu_end = (qu->_capacity - qu->_head);
-    memcpy(_queue_pos(new_qu, 0), _queue_pos(qu, qu->_head), _qu_end * qu->_element_size);
-    memcpy(_queue_pos(new_qu, _qu_end), _queue_pos(qu, 0), (qu->_length - _qu_end) * qu->_element_size);
+    size_t dest_size_start = _qu_end * qu->_element_size;
+    size_t dest_size_end = (qu->_length - _qu_end) * qu->_element_size;
+    memcpy_s(_queue_pos(new_qu, 0), dest_size_start, _queue_pos(qu, qu->_head), dest_size_start);
+    memcpy_s(_queue_pos(new_qu, _qu_end), dest_size_end, _queue_pos(qu, 0), dest_size_end);
   }
   else {
     // Queue is contained in circular buffer, one copy will get everything
-    memcpy(new_qu->_buffer, _queue_pos(qu, qu->_head), qu->_length * qu->_element_size);
+    size_t dest_size = qu->_length * qu->_element_size;
+    memcpy_s(new_qu->_buffer, dest_size, _queue_pos(qu, qu->_head), dest_size);
   }
   new_qu->_head = 0;
   new_qu->_tail = qu->_length;
@@ -50,10 +52,12 @@ bool _queue_insert(queue** qu, void* data) {
   }
 
   // Append to tail
-  void* dest = _queue_pos(*qu, (*qu)->_tail);
-  memcpy(dest, data, (*qu)->_element_size);
-  (*qu)->_tail = ((*qu)->_tail + 1) % (*qu)->_capacity;
-  (*qu)->_length++;
+  queue* _qu = *qu;
+  void* dest = _queue_pos(_qu, _qu->_tail);
+  size_t dest_size = _qu->_element_size;
+  memcpy_s(dest, dest_size, data, dest_size);
+  _qu->_tail = (_qu->_tail + 1) % _qu->_capacity;
+  _qu->_length++;
   return true;
 }
 

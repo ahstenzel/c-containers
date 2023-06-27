@@ -7,9 +7,10 @@ size_t _vec_buffer_size(size_t element_size, size_t capacity) {
 }
 
 vector* _vec_factory(size_t element_size, size_t capacity) {
-  vector* vec = malloc(offsetof(vector, _buffer) + _vec_buffer_size(element_size, capacity));
+  size_t buffer_size = offsetof(vector, _buffer) + _vec_buffer_size(element_size, capacity);
+  vector* vec = malloc(buffer_size);
   if (!vec) { return NULL; }
-  vec->_length = 0;
+  memset(vec, 0, buffer_size);
   vec->_capacity = capacity;
   vec->_element_size = element_size;
   return vec;
@@ -19,7 +20,8 @@ vector* _vec_resize(vector* vec, size_t new_capacity) {
   // Create new vector & copy data to it
   vector* new_vec = _vec_factory(vec->_element_size, new_capacity);
   if (!new_vec) { return NULL; }
-  memcpy(new_vec->_buffer, vec->_buffer, vec->_element_size * vec->_length);
+  size_t dest_size = vec->_element_size * vec->_length;
+  memcpy_s(new_vec->_buffer, dest_size, vec->_buffer, dest_size);
   new_vec->_length = vec->_length;
   free(vec);
   return new_vec;
@@ -38,17 +40,20 @@ bool _vec_insert(vector** vec, size_t index, void* data) {
   }
   
   // Shift over elements
-  if (index < (*vec)->_length) {
-    void* dest = (void*)(_vec_pos(*vec, index + 1));
-    void* src = (void*)(_vec_pos(*vec, index));
+  vector* _vec = *vec;
+  if (index < _vec->_length) {
+    void* dest = (void*)(_vec_pos(_vec, index + 1));
+    void* src = (void*)(_vec_pos(_vec, index));
     if (!dest || !src) { return false; }
-    memmove(dest, src, (*vec)->_element_size * ((*vec)->_length - index));
+    size_t move_size = _vec->_element_size * (_vec->_length - index);
+    memmove_s(dest, move_size, src, move_size);
   }
   
   // Copy element
-  uint8_t* dest = _vec_pos(*vec, index);
-  memcpy(dest, data, (*vec)->_element_size);
-  (*vec)->_length++;
+  uint8_t* dest = _vec_pos(_vec, index);
+  size_t dest_size = _vec->_element_size;
+  memcpy_s(dest, dest_size, data, dest_size);
+  _vec->_length++;
   return true;
 }
 
@@ -59,10 +64,11 @@ bool _vec_remove(vector* vec, size_t index, size_t count) {
   
   // Shift over elements
   if (index < vec->_length) {
-    void* dest = (void*)(_vec_pos(vec, index + count));
-    void* src = (void*)(_vec_pos(vec, index));
+    void* dest = (void*)(_vec_pos(vec, index));
+    void* src = (void*)(_vec_pos(vec, index + count));
     if (!dest || !src) { return false; }
-    memmove(dest, src, vec->_element_size * (vec->_length - (index + count)));
+    size_t move_size = vec->_element_size * (vec->_length - index - count);
+    memmove_s(dest, move_size, src, move_size);
   }
 
   // Decrement _length

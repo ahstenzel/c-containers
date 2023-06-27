@@ -7,9 +7,10 @@ size_t _stack_buffer_size(size_t element_size, size_t capacity) {
 }
 
 stack* _stack_factory(size_t element_size, size_t capacity) {
-  stack* stk = malloc(offsetof(stack, _buffer) + _stack_buffer_size(element_size, capacity));
+  size_t buffer_size = offsetof(stack, _buffer) + _stack_buffer_size(element_size, capacity); 
+  stack* stk = malloc(buffer_size);
   if (!stk) { return NULL; }
-  stk->_length = 0;
+  memset(stk, 0, buffer_size);
   stk->_capacity = capacity;
   stk->_element_size = element_size;
   return stk;
@@ -19,7 +20,8 @@ stack* _stack_resize(stack* stk, size_t new_capacity) {
   // Create new stack & copy data to it
   stack* new_stk = _stack_factory(stk->_element_size, new_capacity);
   if (!new_stk) { return NULL; }
-  memcpy(new_stk->_buffer, stk->_buffer, stk->_element_size * stk->_length);
+  size_t dest_size = stk->_element_size * stk->_length;
+  memcpy_s(new_stk->_buffer, dest_size, stk->_buffer, dest_size);
   new_stk->_length = stk->_length;
   free(stk);
   return new_stk;
@@ -37,15 +39,17 @@ bool _stack_insert(stack** stk, void* data) {
   }
 
   // Copy element
-  void* dest = (void*)(_stack_pos(*stk, (*stk)->_length));
-  memcpy(dest, data, (*stk)->_element_size);
-  (*stk)->_length++;
+  stack* _stk = *stk;
+  void* dest = (void*)(_stack_pos(_stk, _stk->_length));
+  size_t dest_size = _stk->_element_size;
+  memcpy_s(dest, dest_size, data, dest_size);
+  _stk->_length++;
   return true;
 }
 
 bool _stack_remove(stack* stk, size_t count) {
   // Error check
-  if (!stk) { return false; }
+  if (!stk || stk->_length < count) { return false; }
 
   // Decrement _length
   stk->_length -= count;
