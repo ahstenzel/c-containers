@@ -72,12 +72,12 @@
 
 /** FIFO group of elements. */
 typedef struct {
-  size_t _length;
-  size_t _head;
-  size_t _tail;
-  size_t _capacity;
-  size_t _element_size;
-  uint8_t _buffer[];
+	size_t _length;
+	size_t _head;
+	size_t _tail;
+	size_t _capacity;
+	size_t _element_size;
+	uint8_t _buffer[];
 } queue;
 
 size_t _queue_buffer_size(size_t, size_t);

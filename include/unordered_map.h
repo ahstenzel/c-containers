@@ -99,23 +99,24 @@ typedef uint64_t _umap_hash_t;
  * Move the iterator to the next element.
  * @param i Iterator pointer
 */
-#define unordered_map_it_next(i) _umap_next(&i)
+#define unordered_map_it_next(i) _umap_it_next(&i)
 
 /** Hash table of key-value pairs. */
 typedef struct {
-  size_t _length;
-  size_t _capacity;
-  size_t _element_size;
-  size_t _load_count;
-  uint8_t _buffer[];
+	size_t _length;
+	size_t _capacity;
+	size_t _element_size;
+	size_t _load_count;
+	uint8_t _buffer[];
 } unordered_map;
 
+/** Iterator for an unordered map. */
 typedef struct {
-  unordered_map* _umap;
-  void* data;
-  _umap_key_t key;
-  size_t _index;
-} umap_it_t;
+	unordered_map* _umap;
+	void* data;
+	_umap_key_t key;
+	size_t _index;
+} unordered_map_it_t;
 
 size_t _umap_node_size(size_t);
 
@@ -131,8 +132,8 @@ bool _umap_delete(unordered_map*, _umap_key_t);
 
 void* _umap_find(unordered_map*, _umap_key_t);
 
-umap_it_t* _umap_it(unordered_map*);
+unordered_map_it_t* _umap_it(unordered_map*);
 
-void _umap_next(umap_it_t**);
+void _umap_it_next(unordered_map_it_t**);
 
 #endif  //C_UMAP_H

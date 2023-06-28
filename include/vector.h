@@ -114,10 +114,10 @@
 
 /** Dynamically resizing array. */
 typedef struct {
-  size_t _length;
-  size_t _capacity;
-  size_t _element_size;
-  uint8_t _buffer[];
+	size_t _length;
+	size_t _capacity;
+	size_t _element_size;
+	uint8_t _buffer[];
 } vector;
 
 size_t _vec_buffer_size(size_t, size_t);

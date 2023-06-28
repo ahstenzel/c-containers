@@ -96,12 +96,12 @@
 
 /** Double-ended queue. */
 typedef struct {
-  size_t _length;
-  size_t _head;
-  size_t _tail;
-  size_t _capacity;
-  size_t _element_size;
-  uint8_t _buffer[];
+	size_t _length;
+	size_t _head;
+	size_t _tail;
+	size_t _capacity;
+	size_t _element_size;
+	uint8_t _buffer[];
 } dequeue;
 
 size_t _dequeue_buffer_size(size_t, size_t);

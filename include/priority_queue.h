@@ -84,11 +84,18 @@ typedef int32_t priority_queue_value_t;
 #define priority_queue_bytes(q) (q) ? (offsetof(priority_queue, _buffer) + _priority_queue_buffer_size((q)->_element_size, (q)->_capacity)) : 0
 
 typedef struct {
-  size_t _length;
-  size_t _capacity;
-  size_t _element_size;
-  uint8_t _buffer[];
+	size_t _length;
+	size_t _capacity;
+	size_t _element_size;
+	uint8_t _buffer[];
 } priority_queue;
+
+typedef struct {
+	priority_queue* _qu;
+	void* data;
+	size_t _index;
+	priority_queue_value_t value;
+} priority_queue_it_t;
 
 size_t _priority_queue_buffer_size(size_t, size_t);
 
@@ -101,5 +108,9 @@ bool _priority_queue_insert(priority_queue**, priority_queue_value_t, void*);
 bool _priority_queue_remove(priority_queue*, size_t);
 
 void _priority_queue_sort(priority_queue*);
+
+priority_queue_it_t* _priority_queue_it(priority_queue*);
+
+void _priority_queue_it_next(priority_queue_it_t**);
 
 #endif
