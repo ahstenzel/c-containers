@@ -59,6 +59,31 @@ bool _priority_queue_remove(priority_queue* qu, size_t count) {
 	return true;
 }
 
+bool _priority_queue_remove_value(priority_queue* qu, priority_queue_value_t value) {
+	// Error check
+	if (!qu || qu->_length == 0) { return false; }
+
+	// Find value
+	size_t it = _priority_queue_find_index(qu, value);
+	if (it < qu->_capacity) {
+		// Shift value block
+		void* dest = (void*)(_priority_queue_value_pos(qu, it));
+		void* src = (void*)(_priority_queue_value_pos(qu, it + 1));
+		size_t move_size = ((qu->_capacity - it - 1) * sizeof(priority_queue_value_t)) + (qu->_capacity * qu->_element_size);
+		memmove_s(dest, move_size, src, move_size);
+
+		// Shift data block
+		dest = (void*)(_priority_queue_data_pos(qu, it));
+		src = (void*)(_priority_queue_data_pos(qu, it + 1));
+		move_size = (qu->_capacity - it - 1) * qu->_element_size;
+		memmove_s(dest, move_size, src, move_size);
+
+		qu->_length--;
+		return true;
+	}
+	return false;
+}
+
 void _priority_queue_sort(priority_queue* qu) {
 	// Insertion sort
 	size_t dest_elem_size = qu->_element_size;
@@ -100,6 +125,45 @@ priority_queue_it_t* _priority_queue_it(priority_queue* qu) {
 	// Find first valid entry in map
 	_priority_queue_it_next(&it);
 	return it;
+}
+
+size_t _priority_queue_find_index(priority_queue* qu, priority_queue_value_t value) {
+	// Binary search
+	size_t hi = qu->_length - 1;
+	size_t lo = 0;
+	size_t md = 0;
+	priority_queue_value_t hi_val = 0;
+	priority_queue_value_t lo_val = 0;
+	priority_queue_value_t md_val = 0;
+	do {
+		md = lo + (hi - lo) / 2;
+		hi_val = _priority_queue_value(qu, hi);
+		lo_val = _priority_queue_value(qu, lo);
+		md_val = _priority_queue_value(qu, md);
+		if (md_val == value) {
+			// Value found
+			return md;
+		}
+		else if (md_val < value) {
+			// Midpoint too low, move window up
+			lo = md + 1;
+		}
+		else {
+			// Midpoint too high, move window down
+			hi = md - 1;
+		}
+	}
+	while (hi != lo);
+	return qu->_capacity;
+}
+
+void* _priority_queue_find(priority_queue* qu, priority_queue_value_t value) {
+	// Error check
+	if (!qu || qu->_length == 0) { return NULL; }
+
+	// Binary search
+	size_t it = _priority_queue_find_index(qu, value);
+	return (it < qu->_capacity) ? _priority_queue_data_pos(qu, it) : NULL;
 }
 
 void _priority_queue_it_next(priority_queue_it_t** it) {

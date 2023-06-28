@@ -35,9 +35,9 @@ typedef int32_t priority_queue_value_t;
  * Get the top element in the priority queue.
  * @param q Priority queue pointer
  * @param t Priority queue type
- * @return Top element casted to type t
+ * @return Void data pointer, or NULL if empty
 */
-#define priority_queue_top_data(q, t) *(t*)((q)->_length > 0 ? _priority_queue_data_pos(q, (q)->_length - 1) : NULL)
+#define priority_queue_top_data(q) (void*)((q)->_length > 0 ? _priority_queue_data_pos(q, (q)->_length - 1) : NULL)
 
 /**
  * Get the value of the top element in the priority queue.
@@ -81,8 +81,30 @@ typedef int32_t priority_queue_value_t;
  * @param q Priority queue pointer
  * @return Number of bytes
 */
-#define priority_queue_bytes(q) (q) ? (offsetof(priority_queue, _buffer) + _priority_queue_buffer_size((q)->_element_size, (q)->_capacity)) : 0
+#define priority_queue_bytes(q) (q) ? (offsetof(priority_queue, _buffer) + _priority_queue_buffer_size((q)->_element_size, (q)->_capacity)) : 
 
+/**
+ * Find the element in the priority queue if it exists.
+ * @param q Priority queue pointer
+ * @param v Priority value
+ * @return Data pointer, or NULL if not found
+*/
+#define priority_queue_find(q, v) (_priority_queue_find(q, v))
+
+/**
+ * Create an iterator for the priority queue.
+ * @param q Priority queue pointer
+ * @return Iterator pointer
+*/
+#define priority_queue_it(q) _priority_queue_it(q)
+
+/**
+ * Move the iterator to the next element.
+ * @param i Iterator pointer
+*/
+#define priority_queue_it_next(i) _priority_queue_it_next(&i)
+
+/** List of elements sorted by priority. */
 typedef struct {
 	size_t _length;
 	size_t _capacity;
@@ -90,6 +112,7 @@ typedef struct {
 	uint8_t _buffer[];
 } priority_queue;
 
+/** Iterator for a priority queue. */
 typedef struct {
 	priority_queue* _qu;
 	void* data;
@@ -107,10 +130,16 @@ bool _priority_queue_insert(priority_queue**, priority_queue_value_t, void*);
 
 bool _priority_queue_remove(priority_queue*, size_t);
 
+bool _priority_queue_remove_value(priority_queue*, priority_queue_value_t);
+
 void _priority_queue_sort(priority_queue*);
+
+size_t _priority_queue_find_index(priority_queue*, priority_queue_value_t);
+
+void* _priority_queue_find(priority_queue*, priority_queue_value_t);
 
 priority_queue_it_t* _priority_queue_it(priority_queue*);
 
 void _priority_queue_it_next(priority_queue_it_t**);
 
-#endif
+#endif	// C_PRIORITY_QUEUE_H

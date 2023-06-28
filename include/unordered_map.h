@@ -63,7 +63,7 @@ typedef uint64_t _umap_hash_t;
  * Find the element if it exists in the map.
  * @param u Map pointer
  * @param k Key
- * @return Data pointer (or NULL if element does not exist)
+ * @return Void data pointer, or NULL if element does not exist
 */
 #define unordered_map_find(u, k) _umap_find(u, k)
 
@@ -136,4 +136,4 @@ unordered_map_it_t* _umap_it(unordered_map*);
 
 void _umap_it_next(unordered_map_it_t**);
 
-#endif  //C_UMAP_H
+#endif  // C_UMAP_H

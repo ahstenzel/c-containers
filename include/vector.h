@@ -31,10 +31,9 @@
  * Get an element from the vector.
  * @param v Vector pointer
  * @param i Index
- * @param t Vector type
- * @result Element at position i casted to type t
+ * @result Void data pointer, or NULL if out of range
 */
-#define vector_get(v, i, t) *(t*)((i < (v)->_length && i >= 0) ? _vec_pos(v, i) : NULL)
+#define vector_get(v, i) (void*)((i < (v)->_length && i >= 0) ? _vec_pos(v, i) : NULL)
 
 /**
  * Set the element in the vector.
@@ -42,7 +41,7 @@
  * @param i Index
  * @param d Data pointer
 */
-#define vector_set(v, i, d) { if (i < (v)->_length && i >= 0) memcpy(_vec_pos(v, i), d, (v)->_element_size) }
+#define vector_set(v, i, d) { if (i < (v)->_length && i >= 0) memcpy_s(_vec_pos(v, i), (v)->_element_size, d, (v)->_element_size) }
 
 /**
  * Get the number of elements in the vector.
@@ -131,4 +130,4 @@ bool _vec_insert(vector**, size_t, void*);
 bool _vec_remove(vector*, size_t, size_t);
 
 
-#endif  //C_VECTOR_H
+#endif  // C_VECTOR_H

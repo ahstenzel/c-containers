@@ -30,10 +30,9 @@
 /**
  * Get the front element of the queue.
  * @param q Queue pointer
- * @param t Queue type
- * @return Queue head casted to type t
+ * @return Void data pointer, or NULL if empty
 */
-#define queue_head(q, t) *(t*)((q)->_length > 0 ? _queue_pos(q, (q)->_head) : NULL)
+#define queue_head(q) (void*)((q)->_length > 0 ? _queue_pos(q, (q)->_head) : NULL)
 
 /**
  * Add a new element to the back of the queue.
@@ -90,4 +89,4 @@ bool _queue_insert(queue**, void*);
 
 bool _queue_remove(queue*, size_t);
 
-#endif
+#endif	// C_QUEUE_H

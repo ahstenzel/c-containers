@@ -30,18 +30,16 @@
 /**
  * Get the front element of the dequeue.
  * @param q Dequeue pointer
- * @param t Dequeue type
- * @return Element at front casted to type t
+ * @return Void data pointer, or NULL if empty
 */
-#define dequeue_front(q, t) *(t*)((q)->_length > 0 ? _dequeue_pos(q, (q)->_tail) : NULL)
+#define dequeue_front(q) (void*)((q)->_length > 0 ? _dequeue_pos(q, (q)->_tail) : NULL)
 
 /**
  * Get the back element of the dequeue.
  * @param q Dequeue pointer
- * @param t Dequeue type
- * @return Element at back casted to type t
+ * @return Void data pointer, or NULL if empty
 */
-#define dequeue_back(q, t) *(t*)((q)->_length > 0 ? _dequeue_pos(q, (q)->_head) : NULL)
+#define dequeue_back(q) (void*)((q)->_length > 0 ? _dequeue_pos(q, (q)->_head) : NULL)
 
 /**
  * Add an element to the front of the dequeue.
@@ -118,4 +116,4 @@ bool _dequeue_remove_front(dequeue*, size_t);
 
 bool _dequeue_remove_back(dequeue*, size_t);
 
-#endif
+#endif	// C_DEQUEUE_H

@@ -2,8 +2,9 @@
 #include "vector.h"
 #include "stack.h"
 #include "unordered_map.h"
-#include "lot.h"
 #include "queue.h"
+#include "priority_queue.h"
+#include "dequeue.h"
 
 int main() {
   printf("__Vector__\n");
@@ -12,7 +13,7 @@ int main() {
     vector_push_back(myvec, &i);
   }
   for (size_t i = 0; i < vector_size(myvec); ++i) {
-    printf("%zd: %d\n", i, vector_get(myvec, i, int));
+    printf("%zd: %d\n", i, *(int*)vector_get(myvec, i));
   }
   vector_destroy(myvec);
 
@@ -22,7 +23,7 @@ int main() {
     stack_push(mystack, &i);
   }
   while (stack_size(mystack) > 0) {
-    printf("%d\n", stack_head(mystack, int));
+    printf("%d\n", *(int*)stack_head(mystack));
     stack_pop(mystack);
   }
   stack_destroy(mystack);
@@ -34,23 +35,11 @@ int main() {
     keys[i] = i + 1000;
     unordered_map_insert(mymap, keys[i], &i);
   }
-  for (umap_it_t* it = unordered_map_it(mymap); it; unordered_map_it_next(it)) {
+  for (unordered_map_it_t* it = unordered_map_it(mymap); it; unordered_map_it_next(it)) {
     int j = *(int*)(it->data);
     printf("%d: %d\n", (int)it->key, j);
   }
   unordered_map_destroy(mymap);
-
-  printf("__Lot__\n");
-  lot* mylot = lot_create(int);
-  uint64_t lkeys[40];
-  for (int i = 0; i < 40; ++i) {
-    lot_insert(mylot, &lkeys[i], &i);
-  }
-  for (lot_it_t* it = lot_it(mylot); it; lot_it_next(it)) {
-    int j = *(int*)(it->data);
-    printf("%d: %d\n", (int)it->__index, j);
-  }
-  lot_destroy(mylot);
 
   printf("__Queue__\n");
   queue* myqueue = queue_create(int);
@@ -64,7 +53,7 @@ int main() {
     queue_push(myqueue, &i);
   }
   for (int i = 0; i < 40; ++i) {
-    printf("%d\n", queue_head(myqueue, int));
+    printf("%d\n", *(int*)queue_head(myqueue));
     queue_pop(myqueue);
   }
   queue_destroy(myqueue);

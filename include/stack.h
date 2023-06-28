@@ -30,10 +30,9 @@
 /**
  * Get the top element of the stack.
  * @param s Stack pointer
- * @param t Stack type
- * @return Stack head casted to type t
+ * @return Void data pointer, or NULL if empty
 */
-#define stack_head(s, t) *(t*)((s)->_length > 0 ? _stack_pos(s, (s)->_length - 1) : NULL)
+#define stack_head(s) (void*)((s)->_length > 0 ? _stack_pos(s, (s)->_length - 1) : NULL)
 
 /**
  * Add a new element to the top of the stack.
@@ -89,4 +88,4 @@ bool _stack_insert(stack**, void*);
 
 bool _stack_remove(stack*, size_t);
 
-#endif  //C_STACK_H
+#endif  // C_STACK_H
