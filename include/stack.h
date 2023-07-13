@@ -5,10 +5,7 @@
  * LIFO group of elements.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdbool.h>
+#include "common.h"
 
 #define _STACK_DEFAULT_CAPACITY 1
 
@@ -38,14 +35,13 @@
  * Add a new element to the top of the stack.
  * @param s Stack pointer
  * @param d Data pointer
- * @return True if element was added successfully
+ * @return Void data pointer to inserted element, or NULL
 */
 #define stack_push(s, d) _stack_insert(&s, (void*)d)
 
 /**
  * Remove the element from the top of the stack.
  * @param s Stack pointer
- * @return True if element was removed successfully
 */
 #define stack_pop(s) _stack_remove(s, 1)
 
@@ -59,7 +55,6 @@
 /**
  * Remove all elements from the stack.
  * @param s Stack pointer
- * @return True if elements were removed successfully
 */
 #define stack_clear(s) _stack_remove(s, (s)->_length)
 
@@ -76,16 +71,16 @@ typedef struct {
 	size_t _capacity;
 	size_t _element_size;
 	uint8_t _buffer[];
-} stack;
+} stack_t;
 
 size_t _stack_buffer_size(size_t, size_t);
 
-stack* _stack_factory(size_t, size_t);
+stack_t* _stack_factory(size_t, size_t);
 
-stack* _stack_resize(stack*, size_t);
+stack_t* _stack_resize(stack_t*, size_t);
 
-bool _stack_insert(stack**, void*);
+void* _stack_insert(stack_t**, void*);
 
-bool _stack_remove(stack*, size_t);
+void _stack_remove(stack_t*, size_t);
 
 #endif  // C_STACK_H

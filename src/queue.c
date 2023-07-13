@@ -6,9 +6,9 @@ size_t _queue_buffer_size(size_t element_size, size_t capacity) {
 	return ((element_size * capacity) + (size_max - 1)) & ~(size_max - 1);
 }
 
-queue* _queue_factory(size_t element_size, size_t capacity) {
-	size_t buffer_size = offsetof(queue, _buffer) + _queue_buffer_size(element_size, capacity);
-	queue* qu = malloc(buffer_size);
+queue_t* _queue_factory(size_t element_size, size_t capacity) {
+	size_t buffer_size = offsetof(queue_t, _buffer) + _queue_buffer_size(element_size, capacity);
+	queue_t* qu = malloc(buffer_size);
 	if (!qu) { return NULL; }
 	memset(qu, 0, buffer_size);
 	qu->_capacity = capacity;
@@ -16,9 +16,9 @@ queue* _queue_factory(size_t element_size, size_t capacity) {
 	return qu;
 }
 
-queue* _queue_resize(queue* qu, size_t new_capacity) {
+queue_t* _queue_resize(queue_t* qu, size_t new_capacity) {
 	// Create new queue & copy data to it
-	queue* new_qu = _queue_factory(qu->_element_size, new_capacity);
+	queue_t* new_qu = _queue_factory(qu->_element_size, new_capacity);
 	if (!new_qu) { return NULL; }
 	if (qu->_tail <= qu->_head) {
 		// Queue wraps around circular buffer, copy in two parts
@@ -40,34 +40,34 @@ queue* _queue_resize(queue* qu, size_t new_capacity) {
 	return new_qu;
 }
 
-bool _queue_insert(queue** qu, void* data) {
+void* _queue_insert(queue_t** qu, void* data) {
 	// Error check
-	if (!qu || !(*qu)) { return false; }
+	if (!qu || !(*qu)) { return NULL; }
 
 	// Resize container
 	if ((*qu)->_length >= (*qu)->_capacity) {
-		queue* temp = _queue_resize(*qu, (*qu)->_capacity * 2);
-		if (!temp) { return false; }
+		queue_t* temp = _queue_resize(*qu, (*qu)->_capacity * 2);
+		if (!temp) { return NULL; }
 		(*qu) = temp;
 	}
 
 	// Append to tail
-	queue* _qu = *qu;
+	queue_t* _qu = *qu;
 	void* dest = _queue_pos(_qu, _qu->_tail);
 	size_t dest_size = _qu->_element_size;
 	memcpy_s(dest, dest_size, data, dest_size);
 	_qu->_tail = (_qu->_tail + 1) % _qu->_capacity;
 	_qu->_length++;
-	return true;
+	return dest;
 }
 
-bool _queue_remove(queue* qu, size_t count) {
+void _queue_remove(queue_t* qu, size_t count) {
 	// Error check
-	if (!qu || qu->_length < count) { return false; }
+	if (!qu || qu->_length < count) { return; }
 
 	// Increment head
 	size_t new_head = (qu->_head + count) % qu->_capacity;
 	qu->_head = (qu->_head <= qu->_tail && new_head > qu->_tail) ? qu->_tail : new_head;
 	qu->_length -= count;
-	return true;
+	return;
 }

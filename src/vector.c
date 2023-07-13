@@ -6,9 +6,9 @@ size_t _vec_buffer_size(size_t element_size, size_t capacity) {
 	return ((element_size * capacity) + (size_max - 1)) & ~(size_max - 1);
 }
 
-vector* _vec_factory(size_t element_size, size_t capacity) {
-	size_t buffer_size = offsetof(vector, _buffer) + _vec_buffer_size(element_size, capacity);
-	vector* vec = malloc(buffer_size);
+vector_t* _vec_factory(size_t element_size, size_t capacity) {
+	size_t buffer_size = offsetof(vector_t, _buffer) + _vec_buffer_size(element_size, capacity);
+	vector_t* vec = malloc(buffer_size);
 	if (!vec) { return NULL; }
 	memset(vec, 0, buffer_size);
 	vec->_capacity = capacity;
@@ -16,9 +16,9 @@ vector* _vec_factory(size_t element_size, size_t capacity) {
 	return vec;
 }
 
-vector* _vec_resize(vector* vec, size_t new_capacity) {
+vector_t* _vec_resize(vector_t* vec, size_t new_capacity) {
 	// Create new vector & copy data to it
-	vector* new_vec = _vec_factory(vec->_element_size, new_capacity);
+	vector_t* new_vec = _vec_factory(vec->_element_size, new_capacity);
 	if (!new_vec) { return NULL; }
 	size_t dest_size = vec->_element_size * vec->_length;
 	memcpy_s(new_vec->_buffer, dest_size, vec->_buffer, dest_size);
@@ -27,24 +27,24 @@ vector* _vec_resize(vector* vec, size_t new_capacity) {
 	return new_vec;
 }
 
-bool _vec_insert(vector** vec, size_t index, void* data) {
+void* _vec_insert(vector_t** vec, size_t index, void* data) {
 	// Error check
-	if (!vec || !(*vec)) { return false; }
-	if (index < 0 || index > ((*vec)->_length + 1)) { return false; }
+	if (!vec || !(*vec)) { return NULL; }
+	if (index < 0 || index > ((*vec)->_length + 1)) { return NULL; }
 
 	// Resize container
 	if ((*vec)->_length >= (*vec)->_capacity) {
-		vector* temp = _vec_resize(*vec, (*vec)->_capacity * 2);
-		if (!temp) { return false; }
+		vector_t* temp = _vec_resize(*vec, (*vec)->_capacity * 2);
+		if (!temp) { return NULL; }
 		(*vec) = temp;
 	}
 	
 	// Shift over elements
-	vector* _vec = *vec;
+	vector_t* _vec = *vec;
 	if (index < _vec->_length) {
 		void* dest = (void*)(_vec_pos(_vec, index + 1));
 		void* src = (void*)(_vec_pos(_vec, index));
-		if (!dest || !src) { return false; }
+		if (!dest || !src) { return NULL; }
 		size_t move_size = _vec->_element_size * (_vec->_length - index);
 		memmove_s(dest, move_size, src, move_size);
 	}
@@ -54,19 +54,19 @@ bool _vec_insert(vector** vec, size_t index, void* data) {
 	size_t dest_size = _vec->_element_size;
 	memcpy_s(dest, dest_size, data, dest_size);
 	_vec->_length++;
-	return true;
+	return dest;
 }
 
-bool _vec_remove(vector* vec, size_t index, size_t count) {
+void _vec_remove(vector_t* vec, size_t index, size_t count) {
 	// Error check
-	if (!vec) { return false; }
-	if ((index + count) >= vec->_length) { return false; }
+	if (!vec) { return; }
+	if ((index + count) >= vec->_length) { return; }
 	
 	// Shift over elements
 	if (index < vec->_length) {
 		void* dest = (void*)(_vec_pos(vec, index));
 		void* src = (void*)(_vec_pos(vec, index + count));
-		if (!dest || !src) { return false; }
+		if (!dest || !src) { return; }
 		size_t move_size = vec->_element_size * (vec->_length - index - count);
 		memmove_s(dest, move_size, src, move_size);
 	}

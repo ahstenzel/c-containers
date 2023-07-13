@@ -6,9 +6,9 @@ size_t _priority_queue_buffer_size(size_t element_size, size_t capacity) {
 	return ((sizeof(priority_queue_value_t) * capacity) + (element_size * capacity) + (size_max - 1)) & ~(size_max - 1);
 }
 
-priority_queue* _priority_queue_factory(size_t element_size, size_t capacity) {
-	size_t buffer_size = offsetof(priority_queue, _buffer) + _priority_queue_buffer_size(element_size, capacity);
-	priority_queue* qu = malloc(buffer_size);
+priority_queue_t* _priority_queue_factory(size_t element_size, size_t capacity) {
+	size_t buffer_size = offsetof(priority_queue_t, _buffer) + _priority_queue_buffer_size(element_size, capacity);
+	priority_queue_t* qu = malloc(buffer_size);
 	if (!qu) { return NULL; }
 	memset(qu, 0, buffer_size);
 	qu->_capacity = capacity;
@@ -16,9 +16,9 @@ priority_queue* _priority_queue_factory(size_t element_size, size_t capacity) {
 	return qu;
 }
 
-priority_queue* _priority_queue_resize(priority_queue* qu, size_t new_capacity) {
+priority_queue_t* _priority_queue_resize(priority_queue_t* qu, size_t new_capacity) {
 	// Create new priority_queue & copy data to it
-	priority_queue* new_qu = _priority_queue_factory(qu->_element_size, new_capacity);
+	priority_queue_t* new_qu = _priority_queue_factory(qu->_element_size, new_capacity);
 	if (!new_qu) { return NULL; }
 	size_t dest_size = qu->_element_size * qu->_length;
 	memcpy_s(new_qu->_buffer, dest_size, qu->_buffer, dest_size);
@@ -27,19 +27,19 @@ priority_queue* _priority_queue_resize(priority_queue* qu, size_t new_capacity) 
 	return new_qu;
 }
 
-bool _priority_queue_insert(priority_queue** qu, priority_queue_value_t value, void* data) {
+void _priority_queue_insert(priority_queue_t** qu, priority_queue_value_t value, void* data) {
 	// Error check
-	if (!qu || !(*qu)) { return false; }
+	if (!qu || !(*qu)) { return; }
 
 	// Resize container
 	if ((*qu)->_length >= (*qu)->_capacity) {
-		priority_queue* temp = _priority_queue_resize(*qu, (*qu)->_capacity * 2);
-		if (!temp) { return false; }
+		priority_queue_t* temp = _priority_queue_resize(*qu, (*qu)->_capacity * 2);
+		if (!temp) { return; }
 		(*qu) = temp;
 	}
 
 	// Copy element to end
-	priority_queue* _qu = *qu;
+	priority_queue_t* _qu = *qu;
 	void* dest = (void*)(_priority_queue_data_pos(_qu, _qu->_length));
 	size_t dest_size = _qu->_element_size;
 	memcpy_s(dest, dest_size, data, dest_size);
@@ -47,21 +47,21 @@ bool _priority_queue_insert(priority_queue** qu, priority_queue_value_t value, v
 
 	// Sort list
 	_priority_queue_sort(_qu);
-	return true;
+	return;
 }
 
-bool _priority_queue_remove(priority_queue* qu, size_t count) {
+void _priority_queue_remove(priority_queue_t* qu, size_t count) {
 	// Error check
-	if (!qu || qu->_length < count) { return false; }
+	if (!qu || qu->_length < count) { return; }
 
 	// Decrement _length
 	qu->_length -= count;
-	return true;
+	return;
 }
 
-bool _priority_queue_remove_value(priority_queue* qu, priority_queue_value_t value) {
+void _priority_queue_remove_value(priority_queue_t* qu, priority_queue_value_t value) {
 	// Error check
-	if (!qu || qu->_length == 0) { return false; }
+	if (!qu || qu->_length == 0) { return; }
 
 	// Find value
 	size_t it = _priority_queue_find_index(qu, value);
@@ -79,12 +79,12 @@ bool _priority_queue_remove_value(priority_queue* qu, priority_queue_value_t val
 		memmove_s(dest, move_size, src, move_size);
 
 		qu->_length--;
-		return true;
+		return;
 	}
-	return false;
+	return;
 }
 
-void _priority_queue_sort(priority_queue* qu) {
+void _priority_queue_sort(priority_queue_t* qu) {
 	// Insertion sort
 	size_t dest_elem_size = qu->_element_size;
 	size_t dest_value_size = sizeof(priority_queue_value_t);
@@ -110,7 +110,7 @@ void _priority_queue_sort(priority_queue* qu) {
 	}
 }
 
-priority_queue_it_t* _priority_queue_it(priority_queue* qu) {
+priority_queue_it_t* _priority_queue_it(priority_queue_t* qu) {
 	// Error check
 	if (!qu || qu->_length == 0) { return NULL; }
 
@@ -127,7 +127,7 @@ priority_queue_it_t* _priority_queue_it(priority_queue* qu) {
 	return it;
 }
 
-size_t _priority_queue_find_index(priority_queue* qu, priority_queue_value_t value) {
+size_t _priority_queue_find_index(priority_queue_t* qu, priority_queue_value_t value) {
 	// Binary search
 	size_t hi = qu->_length - 1;
 	size_t lo = 0;
@@ -157,7 +157,7 @@ size_t _priority_queue_find_index(priority_queue* qu, priority_queue_value_t val
 	return qu->_capacity;
 }
 
-void* _priority_queue_find(priority_queue* qu, priority_queue_value_t value) {
+void* _priority_queue_find(priority_queue_t* qu, priority_queue_value_t value) {
 	// Error check
 	if (!qu || qu->_length == 0) { return NULL; }
 
@@ -172,7 +172,7 @@ void _priority_queue_it_next(priority_queue_it_t** it) {
 
 	// Find the next valid position in the buffer
 	priority_queue_it_t* _it = *it;
-	priority_queue* _qu = _it->_qu;
+	priority_queue_t* _qu = _it->_qu;
 	if (_it->_index > 0) {
 		// Record next positions data
 		_it->_index--;
@@ -182,7 +182,7 @@ void _priority_queue_it_next(priority_queue_it_t** it) {
 	else {
 		// End reached, invalidate iterator
 		free(_it);
-		_it = NULL;
+		(*it) = NULL;
 	}
 
 	return;

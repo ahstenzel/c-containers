@@ -8,7 +8,7 @@
 
 int main() {
   printf("__Vector__\n");
-  vector* myvec = vector_create(int);
+  vector_t* myvec = vector_create(int);
   for (int i = 0; i < 10; ++i) {
     vector_push_back(myvec, &i);
   }
@@ -18,7 +18,7 @@ int main() {
   vector_destroy(myvec);
 
   printf("__Stack__\n");
-  stack* mystack = stack_create(int);
+  stack_t* mystack = stack_create(int);
   for (int i = 0; i < 10; ++i) {
     stack_push(mystack, &i);
   }
@@ -29,7 +29,7 @@ int main() {
   stack_destroy(mystack);
 
   printf("__Unordered Map__\n");
-  unordered_map* mymap = unordered_map_create(int);
+  unordered_map_t* mymap = unordered_map_create(int);
   int keys[40];
   for (int i = 0; i < 40; ++i) {
     keys[i] = i + 1000;
@@ -42,7 +42,7 @@ int main() {
   unordered_map_destroy(mymap);
 
   printf("__Queue__\n");
-  queue* myqueue = queue_create(int);
+  queue_t* myqueue = queue_create(int);
   for (int i = 0; i < 15; ++i) {
     queue_push(myqueue, &i);
   }

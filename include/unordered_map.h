@@ -6,10 +6,7 @@
  * Implemented as a simplified Swiss Table architecture.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdbool.h>
+#include "common.h"
 
 #ifdef _UMAP_32  // 32 bit hash
 typedef uint32_t _umap_key_t;
@@ -55,7 +52,7 @@ typedef uint64_t _umap_hash_t;
  * @param u Map pointer
  * @param k Key
  * @param d Data pointer
- * @return True if element was inserted successfully
+ * @return Void pointer to inserted element, or NULL
 */
 #define unordered_map_insert(u, k, d) _umap_insert(&u, k, (void*)d)
 
@@ -71,7 +68,6 @@ typedef uint64_t _umap_hash_t;
  * Remove the element from the map.
  * @param u Map pointer
  * @param k Key
- * @return True if element was removed successfully
 */
 #define unordered_map_delete(u, k) _umap_delete(u, k)
 
@@ -108,11 +104,11 @@ typedef struct {
 	size_t _element_size;
 	size_t _load_count;
 	uint8_t _buffer[];
-} unordered_map;
+} unordered_map_t;
 
 /** Iterator for an unordered map. */
 typedef struct {
-	unordered_map* _umap;
+	unordered_map_t* _umap;
 	void* data;
 	_umap_key_t key;
 	size_t _index;
@@ -120,19 +116,19 @@ typedef struct {
 
 size_t _umap_node_size(size_t);
 
-unordered_map* _umap_factory(size_t, size_t);
+unordered_map_t* _umap_factory(size_t, size_t);
 
-unordered_map* _umap_resize(unordered_map*, size_t);
+unordered_map_t* _umap_resize(unordered_map_t*, size_t);
 
 _umap_hash_t _umap_hash(_umap_key_t);
 
-bool _umap_insert(unordered_map**, _umap_key_t, void*);
+void* _umap_insert(unordered_map_t**, _umap_key_t, void*);
 
-bool _umap_delete(unordered_map*, _umap_key_t);
+void _umap_delete(unordered_map_t*, _umap_key_t);
 
-void* _umap_find(unordered_map*, _umap_key_t);
+void* _umap_find(unordered_map_t*, _umap_key_t);
 
-unordered_map_it_t* _umap_it(unordered_map*);
+unordered_map_it_t* _umap_it(unordered_map_t*);
 
 void _umap_it_next(unordered_map_it_t**);
 

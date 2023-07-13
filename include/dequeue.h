@@ -5,10 +5,7 @@
  * Double-ended queue.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdbool.h>
+#include "common.h"
 
 #define _DEQUEUE_DEFAULT_CAPACITY 1
 
@@ -45,7 +42,7 @@
  * Add an element to the front of the dequeue.
  * @param q Dequeue pointer
  * @param d Data pointer
- * @return True if element was added successfully
+ * @return Void data pointer to inserted element, or NULL
 */
 #define dequeue_push_front(q, d) _dequeue_insert_front(&q, (void*)d)
 
@@ -53,21 +50,19 @@
  * Add an element to the back of the dequeue.
  * @param q Dequeue pointer
  * @param d Data pointer
- * @return True if element was added successfully
+ * @return Void data pointer to inserted element, or NULL
 */
 #define dequeue_push_back(q, d) _dequeue_insert_back(&q, (void*)d)
 
 /**
  * Remove the element at the front of the dequeue.
  * @param q Dequeue pointer
- * @return True if element was removed successfully
 */
 #define dequeue_pop_front(q) _dequeue_remove_front(q, 1)
 
 /**
  * Remove the element at the back of the dequeue.
  * @param q Dequeue pointer
- * @return True if element was removed successfully
 */
 #define dequeue_pop_back(q) _dequeue_remove_back(q, 1)
 
@@ -81,7 +76,6 @@
 /**
  * Remove all elements from the dequeue.
  * @param q Dequeue pointer
- * @return True if elements removed successfully
 */
 #define dequeue_clear(q) _dequeue_remove(q, (q)->_length)
 
@@ -90,7 +84,7 @@
  * @param q Dequeue pointer
  * @return Number of bytes
 */
-#define dequeue_bytes(q) (q) ? (offsetof(dequeue, _buffer) + _dequeue_buffer_size((q)->_element_size, (q)->_capacity)) : 0
+#define dequeue_bytes(q) (q) ? (offsetof(dequeue_t, _buffer) + _dequeue_buffer_size((q)->_element_size, (q)->_capacity)) : 0
 
 /** Double-ended queue. */
 typedef struct {
@@ -100,20 +94,20 @@ typedef struct {
 	size_t _capacity;
 	size_t _element_size;
 	uint8_t _buffer[];
-} dequeue;
+} dequeue_t;
 
 size_t _dequeue_buffer_size(size_t, size_t);
 
-dequeue* _dequeue_factory(size_t, size_t);
+dequeue_t* _dequeue_factory(size_t, size_t);
 
-dequeue* _dequeue_resize(dequeue*, size_t);
+dequeue_t* _dequeue_resize(dequeue_t*, size_t);
 
-bool _dequeue_insert_front(dequeue**, void*);
+void* _dequeue_insert_front(dequeue_t**, void*);
 
-bool _dequeue_insert_back(dequeue**, void*);
+void* _dequeue_insert_back(dequeue_t**, void*);
 
-bool _dequeue_remove_front(dequeue*, size_t);
+void _dequeue_remove_front(dequeue_t*, size_t);
 
-bool _dequeue_remove_back(dequeue*, size_t);
+void _dequeue_remove_back(dequeue_t*, size_t);
 
 #endif	// C_DEQUEUE_H

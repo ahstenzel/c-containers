@@ -5,10 +5,7 @@
  * FIFO group of elements.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdbool.h>
+#include "common.h"
 
 #define _QUEUE_DEFAULT_CAPACITY 1
 
@@ -37,14 +34,13 @@
 /**
  * Add a new element to the back of the queue.
  * @param q Queue pointer
- * @return True if element was added successfully
+ * @return Void data pointer to inserted element, or NULL
 */
 #define queue_push(q, d) _queue_insert(&q, (void*)d)
 
 /**
  * Remove the element at the front of the queue.
  * @param q Queue pointer
- * @return True if element was removed successfully
 */
 #define queue_pop(q) _queue_remove(q, 1)
 
@@ -77,16 +73,16 @@ typedef struct {
 	size_t _capacity;
 	size_t _element_size;
 	uint8_t _buffer[];
-} queue;
+} queue_t;
 
 size_t _queue_buffer_size(size_t, size_t);
 
-queue* _queue_factory(size_t, size_t);
+queue_t* _queue_factory(size_t, size_t);
 
-queue* _queue_resize(queue*, size_t);
+queue_t* _queue_resize(queue_t*, size_t);
 
-bool _queue_insert(queue**, void*);
+void* _queue_insert(queue_t**, void*);
 
-bool _queue_remove(queue*, size_t);
+void _queue_remove(queue_t*, size_t);
 
 #endif	// C_QUEUE_H

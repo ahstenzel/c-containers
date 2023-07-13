@@ -5,10 +5,7 @@
  * Sorted queue of value-data pairs.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdbool.h>
+#include "common.h"
 
 typedef int32_t priority_queue_value_t;
 
@@ -51,14 +48,12 @@ typedef int32_t priority_queue_value_t;
  * @param q Priority queue pointer
  * @param v Priority value
  * @param d Data pointer
- * @return True if element was added successfully
 */
 #define priority_queue_push(q, v, d) _priority_queue_insert(&q, v, (void*)d)
 
 /**
  * Remove the top element from the priority queue.
  * @param q Priority queue pointer
- * @return True if element was removed successfully
 */
 #define priority_queue_pop(q) _priority_queue_remove(q, 1)
 
@@ -72,7 +67,6 @@ typedef int32_t priority_queue_value_t;
 /**
  * Remove all elements in the priority queue.
  * @param q Priority queue pointer
- * @return True if elements were removed successfully
 */
 #define priority_queue_clear(q) _priority_queue_remove(q, (q)->_length)
 
@@ -81,7 +75,7 @@ typedef int32_t priority_queue_value_t;
  * @param q Priority queue pointer
  * @return Number of bytes
 */
-#define priority_queue_bytes(q) (q) ? (offsetof(priority_queue, _buffer) + _priority_queue_buffer_size((q)->_element_size, (q)->_capacity)) : 
+#define priority_queue_bytes(q) (q) ? (offsetof(priority_queue_t, _buffer) + _priority_queue_buffer_size((q)->_element_size, (q)->_capacity)) : 
 
 /**
  * Find the element in the priority queue if it exists.
@@ -110,11 +104,11 @@ typedef struct {
 	size_t _capacity;
 	size_t _element_size;
 	uint8_t _buffer[];
-} priority_queue;
+} priority_queue_t;
 
 /** Iterator for a priority queue. */
 typedef struct {
-	priority_queue* _qu;
+	priority_queue_t* _qu;
 	void* data;
 	size_t _index;
 	priority_queue_value_t value;
@@ -122,23 +116,23 @@ typedef struct {
 
 size_t _priority_queue_buffer_size(size_t, size_t);
 
-priority_queue* _priority_queue_factory(size_t, size_t);
+priority_queue_t* _priority_queue_factory(size_t, size_t);
 
-priority_queue* _priority_queue_resize(priority_queue*, size_t);
+priority_queue_t* _priority_queue_resize(priority_queue_t*, size_t);
 
-bool _priority_queue_insert(priority_queue**, priority_queue_value_t, void*);
+void _priority_queue_insert(priority_queue_t**, priority_queue_value_t, void*);
 
-bool _priority_queue_remove(priority_queue*, size_t);
+void _priority_queue_remove(priority_queue_t*, size_t);
 
-bool _priority_queue_remove_value(priority_queue*, priority_queue_value_t);
+void _priority_queue_remove_value(priority_queue_t*, priority_queue_value_t);
 
-void _priority_queue_sort(priority_queue*);
+void _priority_queue_sort(priority_queue_t*);
 
-size_t _priority_queue_find_index(priority_queue*, priority_queue_value_t);
+size_t _priority_queue_find_index(priority_queue_t*, priority_queue_value_t);
 
-void* _priority_queue_find(priority_queue*, priority_queue_value_t);
+void* _priority_queue_find(priority_queue_t*, priority_queue_value_t);
 
-priority_queue_it_t* _priority_queue_it(priority_queue*);
+priority_queue_it_t* _priority_queue_it(priority_queue_t*);
 
 void _priority_queue_it_next(priority_queue_it_t**);
 
