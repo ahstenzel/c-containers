@@ -1,31 +1,27 @@
-#ifndef C_UMAP_H
-#define C_UMAP_H
-/*
+#ifndef CC_STD_UMAP_H
+#define CC_STD_UMAP_H
+/**
  * unordered_map.h
  * Hash table of key-value pairs.
  * Implemented as a simplified Swiss Table architecture.
- */
+*/
+#include "utilities.h"
 
-#include "common.h"
-
-#ifdef _UMAP_32  // 32 bit hash
 typedef uint32_t _umap_key_t;
 typedef uint32_t _umap_hash_t;
 #define _fnv_offset 2166136261U;
 #define _fnv_prime 16777619U;
-#else // 64 bit hash
-typedef uint64_t _umap_key_t;
-typedef uint64_t _umap_hash_t;
-#define _fnv_offset 14695981039346656037UL;
-#define _fnv_prime 1099511628211UL;
-#endif
 
-#define _UMAP_DEFAULT_CAPACITY 8
+#ifndef UMAP_DEFAULT_CAPACITY
+#define UMAP_DEFAULT_CAPACITY 8ULL
+#endif
+#ifndef UMAP_MAX_CAPACITY
+#define UMAP_MAX_CAPACITY SIZE_MAX - 1
+#endif
 #define _UMAP_DEFAULT_LOAD 0.875f
 #define _UMAP_EMPTY 0x80     // 0b1000 0000
 #define _UMAP_DELETED 0xFE   // 0b1111 1110
 #define _UMAP_SENTINEL 0xFF  // 0b1111 1111
-
 
 #define _umap_h1(h) h >> 7
 #define _umap_h2(h) h & 0x7F
@@ -34,70 +30,56 @@ typedef uint64_t _umap_hash_t;
 #define _umap_node_key(u, i) (_umap_key_t*)_umap_node(u, i)
 #define _umap_node_data(u, i) (void*)(_umap_node(u, i) + ((u)->_element_size > sizeof(_umap_key_t) ? (u)->_element_size : sizeof(_umap_key_t)))
 
-/**
- * Create a new unordered map.
- * @param t Map type
- * @return Map pointer
-*/
-#define unordered_map_create(t) _umap_factory(sizeof(t), _UMAP_DEFAULT_CAPACITY)
+/// @brief Create a new unordered map.
+/// @param t Map type
+/// @return Map pointer
+#define unordered_map_create(t) _umap_factory(sizeof(t), UMAP_DEFAULT_CAPACITY)
 
-/**
- * Deallocate an unordered map.
- * @param u Map pointer
-*/
+/// @brief Deallocate an unordered map.
+/// @param u Map pointer
 #define unordered_map_destroy(u) free(u)
 
-/**
- * Add a new element to the map.
- * @param u Map pointer
- * @param k Key
- * @param d Data pointer
- * @return Void pointer to inserted element, or NULL
-*/
+/// @brief Add a new element to the map.
+/// @param u Map pointer
+/// @param k Key
+/// @param d Data pointer
+/// @return Void data pointer to inserted element, or NULL on failure
 #define unordered_map_insert(u, k, d) _umap_insert(&u, k, (void*)d)
 
-/**
- * Find the element if it exists in the map.
- * @param u Map pointer
- * @param k Key
- * @return Void data pointer, or NULL if element does not exist
-*/
+/// @brief Find the element if it exists in the map.
+/// @param u Map pointer
+/// @param k Key
+/// @return Void data pointer, or NULL if not found
 #define unordered_map_find(u, k) _umap_find(u, k)
 
-/**
- * Remove the element from the map.
- * @param u Map pointer
- * @param k Key
-*/
+/// @brief Remove the element from the map.
+/// @param u Map pointer
+/// @param k Key
 #define unordered_map_delete(u, k) _umap_delete(u, k)
 
-/**
- * Get the number of elements in the map.
- * @param u Map pointer
- * @return Map size
-*/
-#define unordered_map_size(u) (u)->_length
+/// @brief Get the number of elements in the map.
+/// @param u Map pointer
+/// @return Map size
+#define unordered_map_size(u) ((u)->_length)
 
-/**
- * Remove all elements from the map.
- * @param u Map pointer
-*/
+/// @brief Remove all elements from the map.
+/// @param u Map pointer
 #define unordered_map_clear(u) memset(_umap_ctrl(u, 0), _UMAP_EMPTY, (u)->_capacity)
 
-/**
- * Create an iterator for the map.
- * @param u Map pointer
- * @return Iterator pointer
-*/
+/// @brief Create an iterator for the map.
+/// @param u Map pointer
+/// @return Iterator pointer
 #define unordered_map_it(u) _umap_it(u)
 
-/**
- * Move the iterator to the next element.
- * @param i Iterator pointer
-*/
+/// @brief Move the iterator to the next element.
+/// @param i Iterator pointer
 #define unordered_map_it_next(i) _umap_it_next(&i)
 
-/** Hash table of key-value pairs. */
+/// @brief Get the size of the map in memory.
+/// @param u Map pointer
+#define unordered_map_bytes(u) ((u) ? (_umap_size((u)->_element_size, (u)->_capacity)) : 0)
+
+/// @brief Hash table of key-value pairs.
 typedef struct {
 	size_t _length;
 	size_t _capacity;
@@ -106,7 +88,7 @@ typedef struct {
 	uint8_t _buffer[];
 } unordered_map_t;
 
-/** Iterator for an unordered map. */
+/// @brief Iterator for an unordered map.
 typedef struct {
 	unordered_map_t* _umap;
 	void* data;
@@ -115,6 +97,8 @@ typedef struct {
 } unordered_map_it_t;
 
 size_t _umap_node_size(size_t);
+
+size_t _umap_size(size_t, size_t);
 
 unordered_map_t* _umap_factory(size_t, size_t);
 
@@ -132,4 +116,4 @@ unordered_map_it_t* _umap_it(unordered_map_t*);
 
 void _umap_it_next(unordered_map_it_t**);
 
-#endif  // C_UMAP_H
+#endif  // CC_STD_UMAP_H

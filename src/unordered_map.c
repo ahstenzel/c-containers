@@ -2,15 +2,23 @@
 
 size_t _umap_node_size(size_t element_size) {
 	size_t key_size = sizeof(_umap_key_t);
-	size_t size_max = element_size > key_size ? element_size : key_size;
+	size_t size_max = CC_MAX(element_size, key_size);
 	return (element_size + key_size + (size_max - 1)) & ~(size_max - 1);
 }
 
+size_t _umap_size(size_t element_size, size_t capacity) {
+	size_t n = _umap_node_size(element_size);
+	size_t c = n * capacity;
+	if (c / capacity != n) { return 0; }
+	if (c > SIZE_MAX - capacity) { return 0; }
+	return CC_MAX(sizeof(unordered_map_t), offsetof(unordered_map_t, _buffer) + capacity + c);
+}
+
 unordered_map_t* _umap_factory(size_t element_size, size_t capacity) {
-	size_t buffer_size = offsetof(unordered_map_t, _buffer) + capacity + (_umap_node_size(element_size) * capacity);
-	unordered_map_t* umap = malloc(buffer_size);
+	size_t buffer_size = _umap_size(element_size, capacity);
+	if (buffer_size == 0) { return NULL; }
+	unordered_map_t* umap = calloc(1, buffer_size);
 	if (!umap) { return NULL; }
-	memset(umap, 0, buffer_size);
 	umap->_capacity = capacity;
 	umap->_element_size = element_size;
 	memset(_umap_ctrl(umap, 0), _UMAP_EMPTY, capacity);
@@ -18,6 +26,13 @@ unordered_map_t* _umap_factory(size_t element_size, size_t capacity) {
 }
 
 unordered_map_t* _umap_resize(unordered_map_t* umap, size_t new_capacity) {
+	// Calculate new capacity
+	if (new_capacity == 0) {
+		size_t c = CC_NEXT_POW2(umap->_capacity + 1);
+		new_capacity = CC_MIN(c, UMAP_MAX_CAPACITY);
+	}
+	if (new_capacity > UMAP_MAX_CAPACITY || new_capacity < umap->_length) { return NULL; }
+
 	// Create new map
 	unordered_map_t* new_umap = _umap_factory(umap->_element_size, new_capacity);
 	if (!new_umap) { return NULL; }
@@ -50,16 +65,17 @@ _umap_hash_t _umap_hash(_umap_key_t key) {
 void* _umap_insert(unordered_map_t** umap, _umap_key_t key, void* data) {
 	// Error check
 	if (!umap || !(*umap)) { return NULL; }
+	unordered_map_t* _umap = *umap;
 
 	// Resize if needed
-	if ((*umap)->_load_count / (float)(*umap)->_capacity >= _UMAP_DEFAULT_LOAD) {
-		unordered_map_t* temp = _umap_resize(*umap, (*umap)->_capacity * 2);
+	if (_umap->_load_count / (float)_umap->_capacity >= _UMAP_DEFAULT_LOAD) {
+		unordered_map_t* temp = _umap_resize(_umap, 0);
 		if (!temp) { return NULL; }
 		(*umap) = temp;
+		_umap = temp;
 	}
 
 	// Hash the key
-	unordered_map_t* _umap = *umap;
 	_umap_hash_t h = _umap_hash(key);
 	size_t pos = _umap_h1(h) & (_umap->_capacity - 1);
 
@@ -158,9 +174,8 @@ unordered_map_it_t* _umap_it(unordered_map_t* umap) {
 
 	// Construct iterator
 	size_t buffer_size = sizeof(unordered_map_it_t);
-	unordered_map_it_t* it = malloc(buffer_size);
+	unordered_map_it_t* it = calloc(1, buffer_size);
 	if (!it) { return NULL; }
-	memset(it, 0, buffer_size);
 	it->_index = SIZE_MAX;
 	it->_umap = umap;
 	
@@ -171,7 +186,7 @@ unordered_map_it_t* _umap_it(unordered_map_t* umap) {
 
 void _umap_it_next(unordered_map_it_t** it) {
 	// Error check
-	if (!it | !(*it)) { return; }
+	if (!it || !(*it)) { return; }
 
 	// Find the next valid position in the buffer
 	unordered_map_it_t* _it = *it;

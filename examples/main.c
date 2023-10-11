@@ -2,9 +2,11 @@
 #include "vector.h"
 #include "stack.h"
 #include "unordered_map.h"
+#include "unordered_map_str.h"
 #include "queue.h"
 #include "priority_queue.h"
-#include "dequeue.h"
+#include "deque.h"
+#include "free_list.h"
 
 int main() {
   printf("__Vector__\n");

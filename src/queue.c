@@ -1,22 +1,29 @@
 #include "queue.h"
 
-size_t _queue_buffer_size(size_t element_size, size_t capacity) {
-	size_t meta_size = sizeof(size_t);
-	size_t size_max = element_size > meta_size ? element_size : meta_size;
-	return ((element_size * capacity) + (size_max - 1)) & ~(size_max - 1);
+size_t _queue_size(size_t element_size, size_t capacity) {
+	size_t c = element_size * capacity;
+	if (c / capacity != element_size) { return 0; }
+	return CC_MAX(sizeof(queue_t), offsetof(queue_t, _buffer) + c);
 }
 
 queue_t* _queue_factory(size_t element_size, size_t capacity) {
-	size_t buffer_size = offsetof(queue_t, _buffer) + _queue_buffer_size(element_size, capacity);
-	queue_t* qu = malloc(buffer_size);
+	size_t buffer_size = _queue_size(element_size, capacity);
+	if (buffer_size == 0) { return NULL; }
+	queue_t* qu = calloc(1, buffer_size);
 	if (!qu) { return NULL; }
-	memset(qu, 0, buffer_size);
 	qu->_capacity = capacity;
 	qu->_element_size = element_size;
 	return qu;
 }
 
 queue_t* _queue_resize(queue_t* qu, size_t new_capacity) {
+	// Calculate new capacity
+	if (new_capacity == 0) {
+		size_t c = CC_NEXT_POW2(qu->_capacity + 1);
+		new_capacity = CC_MIN(c, QUEUE_MAX_CAPACITY);
+	}
+	if (new_capacity > QUEUE_MAX_CAPACITY || new_capacity < qu->_length) { return NULL; }
+
 	// Create new queue & copy data to it
 	queue_t* new_qu = _queue_factory(qu->_element_size, new_capacity);
 	if (!new_qu) { return NULL; }
@@ -43,16 +50,17 @@ queue_t* _queue_resize(queue_t* qu, size_t new_capacity) {
 void* _queue_insert(queue_t** qu, void* data) {
 	// Error check
 	if (!qu || !(*qu)) { return NULL; }
+	queue_t* _qu = *qu;
 
 	// Resize container
-	if ((*qu)->_length >= (*qu)->_capacity) {
-		queue_t* temp = _queue_resize(*qu, (*qu)->_capacity * 2);
+	if (_qu->_length >= _qu->_capacity) {
+		queue_t* temp = _queue_resize(_qu, 0);
 		if (!temp) { return NULL; }
 		(*qu) = temp;
+		_qu = temp;
 	}
 
 	// Append to tail
-	queue_t* _qu = *qu;
 	void* dest = _queue_pos(_qu, _qu->_tail);
 	size_t dest_size = _qu->_element_size;
 	memcpy_s(dest, dest_size, data, dest_size);
@@ -69,5 +77,4 @@ void _queue_remove(queue_t* qu, size_t count) {
 	size_t new_head = (qu->_head + count) % qu->_capacity;
 	qu->_head = (qu->_head <= qu->_tail && new_head > qu->_tail) ? qu->_tail : new_head;
 	qu->_length -= count;
-	return;
 }
