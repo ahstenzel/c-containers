@@ -54,10 +54,10 @@ unordered_map_t* _umap_resize(unordered_map_t* umap, size_t new_capacity) {
 
 _umap_hash_t _umap_hash(_umap_key_t key) {
 	// Hash using basic FNV-1a implementation
-	_umap_hash_t hash = _fnv_offset;
+	_umap_hash_t hash = _umap_fnv_offset;
 	for (size_t i = 0; i < sizeof(_umap_key_t); ++i) {
 		hash ^= ((key >> (i * 8)) & 0xFF);
-		hash *= _fnv_prime;
+		hash *= _umap_fnv_prime;
 	}
 	return hash;
 }
@@ -66,6 +66,8 @@ void* _umap_insert(unordered_map_t** umap, _umap_key_t key, void* data) {
 	// Error check
 	if (!umap || !(*umap)) { return NULL; }
 	unordered_map_t* _umap = *umap;
+	void* elem = _umap_find(_umap, key);
+	if (elem) { return elem; }
 
 	// Resize if needed
 	if (_umap->_load_count / (float)_umap->_capacity >= _UMAP_DEFAULT_LOAD) {
@@ -94,7 +96,12 @@ void* _umap_insert(unordered_map_t** umap, _umap_key_t key, void* data) {
 
 			// Save the data to the end of the node block, aligned by the larger data type
 			dest_size = _umap->_element_size;
-			memcpy_s(_umap_node_data(_umap, pos), dest_size, data, dest_size);
+			if (data) {
+				memcpy_s(_umap_str_node_data(_umap, pos), dest_size, data, dest_size);
+			}
+			else {
+				memset(_umap_str_node_data(_umap, pos), 0, dest_size);
+			}
 			break;
 		}
 		else {

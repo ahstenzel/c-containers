@@ -9,7 +9,7 @@
 
 typedef char* _umap_str_key_t;
 typedef uint32_t _umap_str_hash_t;
-#define _fnv_prime 16777619U;
+#define _umap_str_fnv_prime 16777619U;
 
 #ifndef UMAP_STR_DEFAULT_CAPACITY
 #define UMAP_STR_DEFAULT_CAPACITY 8ULL
@@ -38,7 +38,7 @@ typedef uint32_t _umap_str_hash_t;
 /// @param u Map pointer
 #define unordered_map_str_destroy(u) _umap_str_destroy(u)
 
-/// @brief Add a new element ot the map.
+/// @brief Add a new element ot the map if it does not already exist.
 /// @param u Map pointer
 /// @param k Key
 /// @param d Data pointer

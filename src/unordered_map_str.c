@@ -54,7 +54,7 @@ unordered_map_str_t* _umap_str_resize(unordered_map_str_t* umap_str, size_t new_
 
 _umap_str_hash_t _umap_str_hash(_umap_str_key_t key) {
 	uint8_t mask_size = sizeof(_umap_str_hash_t) - 4;
-	_umap_str_hash_t hash = _fnv_prime;
+	_umap_str_hash_t hash = _umap_str_fnv_prime;
 	_umap_str_hash_t mask = 0xF << mask_size;
 	while (*key != '\0') {
 		hash = (hash << 4) + *(key++);
@@ -69,6 +69,8 @@ void* _umap_str_insert(unordered_map_str_t** umap_str, _umap_str_key_t key, void
 	// Error check
 	if (!umap_str || !(*umap_str)) { return NULL; }
 	unordered_map_str_t* _umap_str = *umap_str;
+	void* elem = _umap_find(_umap_str, key);
+	if (elem) { return elem; }
 
 	// Resize if needed
 	if (_umap_str->_load_count / (float)_umap_str->_capacity >= _UMAP_STR_DEFAULT_LOAD) {
@@ -103,7 +105,12 @@ void* _umap_str_insert(unordered_map_str_t** umap_str, _umap_str_key_t key, void
 
 			// Save the data to the end of the node block, aligned by the larger data type
 			dest_size = _umap_str->_element_size;
-			memcpy_s(_umap_str_node_data(_umap_str, pos), dest_size, data, dest_size);
+			if (data) {
+				memcpy_s(_umap_str_node_data(_umap_str, pos), dest_size, data, dest_size);
+			}
+			else {
+				memset(_umap_str_node_data(_umap_str, pos), 0, dest_size);
+			}
 			break;
 		}
 		else {

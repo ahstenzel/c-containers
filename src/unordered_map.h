@@ -9,8 +9,8 @@
 
 typedef uint32_t _umap_key_t;
 typedef uint32_t _umap_hash_t;
-#define _fnv_offset 2166136261U;
-#define _fnv_prime 16777619U;
+#define _umap_fnv_offset 2166136261U;
+#define _umap_fnv_prime 16777619U;
 
 #ifndef UMAP_DEFAULT_CAPACITY
 #define UMAP_DEFAULT_CAPACITY 8ULL
@@ -39,11 +39,11 @@ typedef uint32_t _umap_hash_t;
 /// @param u Map pointer
 #define unordered_map_destroy(u) free(u)
 
-/// @brief Add a new element to the map.
+/// @brief Add a new element to the map if it does not already exist.
 /// @param u Map pointer
 /// @param k Key
 /// @param d Data pointer
-/// @return Void data pointer to inserted element, or NULL on failure
+/// @return Void data pointer to inserted element, or the already inserted element, or NULL on failure
 #define unordered_map_insert(u, k, d) _umap_insert(&u, k, (void*)d)
 
 /// @brief Find the element if it exists in the map.
