@@ -44,6 +44,8 @@
 	#include <shlwapi.h>
 	#define strdup _strdup
 	#define strcasecmp StrCmpIW
+	#define strtok_r strtok_s
+	#define itoa_s _itoa_s
 #else
 	#define printf_s printf
 	#define vprintf_s vprintf
@@ -53,6 +55,7 @@
 	#define memmove_s(dest, dest_size, src, src_size) memmove(dest, src, src_size)
 	#define strcat_s(dest, dest_size, src) strcat(dest, src)
 	#define strcpy_s(dest, dest_size, src) strcpy(dest, src)
+	#define itoa_s(value, dest, dest_size, radix) itoa(value, dest, radix)
 #endif // defined(_MSC_VER)
 
 #endif

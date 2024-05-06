@@ -69,7 +69,7 @@ void* _umap_str_insert(unordered_map_str_t** umap_str, _umap_str_key_t key, void
 	// Error check
 	if (!umap_str || !(*umap_str)) { return NULL; }
 	unordered_map_str_t* _umap_str = *umap_str;
-	void* elem = _umap_find(_umap_str, key);
+	void* elem = _umap_str_find(_umap_str, key);
 	if (elem) { return elem; }
 
 	// Resize if needed

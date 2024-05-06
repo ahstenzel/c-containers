@@ -97,10 +97,10 @@ void* _umap_insert(unordered_map_t** umap, _umap_key_t key, void* data) {
 			// Save the data to the end of the node block, aligned by the larger data type
 			dest_size = _umap->_element_size;
 			if (data) {
-				memcpy_s(_umap_str_node_data(_umap, pos), dest_size, data, dest_size);
+				memcpy_s(_umap_node_data(_umap, pos), dest_size, data, dest_size);
 			}
 			else {
-				memset(_umap_str_node_data(_umap, pos), 0, dest_size);
+				memset(_umap_node_data(_umap, pos), 0, dest_size);
 			}
 			break;
 		}

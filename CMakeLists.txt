@@ -17,3 +17,8 @@ target_include_directories(C_CONTAINER PUBLIC "src")
 
 # Enforce standards
 target_compile_features(C_CONTAINER PUBLIC c_std_11)
+#set_target_properties(C_CONTAINER PROPERTIES
+#    C_STANDARD 11
+#    C_STANDARD_REQUIRED ON
+#    C_EXTENSIONS OFF
+#)
