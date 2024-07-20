@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 /** Get the next power of 2 >= x. */
 #define CC_NEXT_POW2(x) (1ULL << (unsigned long long)(log2((double)x-1.)+1.))

@@ -152,9 +152,10 @@ void* _umap_find(unordered_map_t* umap, _umap_key_t key) {
 	// Hash key again
 	_umap_hash_t h = _umap_hash(key);
 	size_t pos = _umap_h1(h) & (umap->_capacity - 1);
+	size_t first_pos = pos;
 
 	// Linear probe to find key
-	while (1) {
+	do {
 		uint8_t* ctrl = _umap_ctrl(umap, pos);
 		// Check if this control byte matches lower byte of hash
 		_umap_hash_t h2 = _umap_h2(h);
@@ -172,7 +173,8 @@ void* _umap_find(unordered_map_t* umap, _umap_key_t key) {
 			// Look at next control byte
 			pos = (pos + 1) & (umap->_capacity - 1);
 		}
-	}
+	} while(pos != first_pos);
+	return NULL;
 }
 
 unordered_map_it_t* _umap_it(unordered_map_t* umap) {
@@ -191,34 +193,32 @@ unordered_map_it_t* _umap_it(unordered_map_t* umap) {
 	return it;
 }
 
-void _umap_it_next(unordered_map_it_t** it) {
+unordered_map_it_t* _umap_it_next(unordered_map_it_t* it) {
 	// Error check
-	if (!it || !(*it)) { return; }
+	if (!it) { return NULL; }
 
 	// Find the next valid position in the buffer
-	unordered_map_it_t* _it = *it;
 	uint8_t* ctrl = NULL;
-	unordered_map_t* _umap = _it->_umap;
+	unordered_map_t* _umap = it->_umap;
 	do {
 		// Increment index
-		_it->_index++;
+		it->_index++;
 
 		// Reached the end of the array
-		if (_it->_index >= _umap->_capacity) {
-			free(_it);
-			(*it) = NULL;
+		if (it->_index >= _umap->_capacity) {
 			break;
 		}
 
 		// Evaluate control byte
-		ctrl = _umap_ctrl(_umap, _it->_index);
+		ctrl = _umap_ctrl(_umap, it->_index);
 		if (!(*ctrl & _UMAP_EMPTY)) {
 			// Index contains data
-			_it->key = *_umap_node_key(_umap, _it->_index);
-			_it->data = _umap_node_data(_umap, _it->_index);
-			break;
+			it->key = *_umap_node_key(_umap, it->_index);
+			it->data = _umap_node_data(_umap, it->_index);
+			return it;
 		}
 	} while(1);
 
-	return;
+	free(it);
+	return NULL;
 }

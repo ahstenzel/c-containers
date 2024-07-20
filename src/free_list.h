@@ -67,7 +67,7 @@
 
 /// @brief Move the iterator to the next element.
 /// @param i Iterator pointer
-#define free_list_it_next(i) _free_list_it_next(&i)
+#define free_list_it_next(i) _free_list_it_next(i)
 
 /** Space-efficient list of elements. */
 typedef struct {
@@ -96,6 +96,6 @@ void _free_list_remove(free_list_t*, size_t, size_t);
 
 free_list_it_t* _free_list_it(free_list_t*);
 
-void _free_list_it_next(free_list_it_t**);
+free_list_it_t* _free_list_it_next(free_list_it_t*);
 
 #endif

@@ -29,10 +29,14 @@ priority_queue_t* _priority_queue_resize(priority_queue_t* qu, size_t new_capaci
 	// Create new priority queue & copy data to it
 	priority_queue_t* new_qu = _priority_queue_factory(qu->_element_size, new_capacity);
 	if (!new_qu) { return NULL; }
-	size_t dest_size = qu->_length * qu->_element_size;
-	memcpy_s(new_qu->_buffer, dest_size, qu->_buffer, dest_size);
+	size_t value_dest_size = qu->_capacity * sizeof(priority_queue_value_t);
+	memcpy_s(_priority_queue_value_pos(new_qu, 0), value_dest_size, _priority_queue_value_pos(qu, 0), value_dest_size);
+	size_t data_dest_size = qu->_capacity * qu->_element_size;
+	memcpy_s(_priority_queue_data_pos(new_qu, 0), data_dest_size, _priority_queue_data_pos(qu, 0), data_dest_size);
+
 	new_qu->_length = qu->_length;
 	free(qu);
+	_priority_queue_sort(new_qu);
 	return new_qu;
 }
 
@@ -49,15 +53,20 @@ void* _priority_queue_insert(priority_queue_t** qu, priority_queue_value_t value
 		_qu = temp;
 	}
 
-	// Copy element to end
-	void* dest = (void*)(_priority_queue_data_pos(_qu, _qu->_length));
-	size_t dest_size = _qu->_element_size;
-	memcpy_s(dest, dest_size, data, dest_size);
+	// Copy value to end
+	void* value_dest = (void*)(_priority_queue_value_pos(_qu, _qu->_length));
+	size_t value_dest_size = sizeof(priority_queue_value_t);
+	memcpy_s(value_dest, value_dest_size, &value, value_dest_size);
+
+	// Copy data to end
+	void* data_dest = (void*)(_priority_queue_data_pos(_qu, _qu->_length));
+	size_t data_dest_size = _qu->_element_size;
+	memcpy_s(data_dest, data_dest_size, data, data_dest_size);
 	_qu->_length++;
 
 	// Sort list
 	_priority_queue_sort(_qu);
-	return dest;
+	return _priority_queue_find(_qu, value, data);
 }
 
 void _priority_queue_remove(priority_queue_t* qu, size_t count) {
@@ -103,14 +112,14 @@ void _priority_queue_sort(priority_queue_t* qu) {
 
 		// Shift elements
 		size_t j=i;
-		for(; j >= 0 && _priority_queue_value(qu, j-1) > tmp_value; --j) {
-			memcpy_s(_priority_queue_data_pos(qu, j+1), dest_elem_size, _priority_queue_data_pos(qu, j), dest_elem_size);
-			memcpy_s(_priority_queue_value_pos(qu, j+1), dest_value_size, _priority_queue_value_pos(qu, j), dest_value_size);
+		for(; j > 0 && _priority_queue_value(qu, j-1) > tmp_value; --j) {
+			memcpy_s(_priority_queue_data_pos(qu, j), dest_elem_size, _priority_queue_data_pos(qu, j-1), dest_elem_size);
+			memcpy_s(_priority_queue_value_pos(qu, j), dest_value_size, _priority_queue_value_pos(qu, j-1), dest_value_size);
 		}
 
 		// Re-insert temp
-		memcpy_s(_priority_queue_data_pos(qu, j+1), dest_elem_size, tmp_data, dest_elem_size);
-		memcpy_s(_priority_queue_value_pos(qu, j+1), dest_value_size, &tmp_value, dest_value_size);
+		memcpy_s(_priority_queue_data_pos(qu, j), dest_elem_size, tmp_data, dest_elem_size);
+		memcpy_s(_priority_queue_value_pos(qu, j), dest_value_size, &tmp_value, dest_value_size);
 	}
 	// Free temp buffer
 	free(tmp_data);
@@ -175,7 +184,7 @@ void* _priority_queue_find(priority_queue_t* qu, priority_queue_value_t value, v
 	return (it < qu->_capacity) ? _priority_queue_data_pos(qu, it) : NULL;
 }
 
-priority_queue_it_t* _priority_queue_it(priority_queue_t* qu) {
+priority_queue_it_t* _priority_queue_it(priority_queue_t* qu, bool begin) {
 	// Error check
 	if (!qu || qu->_length == 0) { return NULL; }
 
@@ -183,11 +192,14 @@ priority_queue_it_t* _priority_queue_it(priority_queue_t* qu) {
 	size_t buffer_size = sizeof(priority_queue_it_t);
 	priority_queue_it_t* it = calloc(1, buffer_size);
 	if (!it) { return NULL; }
-	it->_index = qu->_length;
-	it->_qu = qu;
-	
+
 	// Find first valid entry in map
-	_priority_queue_it_next(&it);
+	it->_qu = qu;
+	if (begin) { it->_index = (qu->_length - 1); }
+	else { it->_index = 0; }
+	it->data = _priority_queue_data_pos(qu, it->_index);
+	it->value = _priority_queue_value(qu, it->_index);
+
 	return it;
 }
 
@@ -208,24 +220,106 @@ priority_queue_it_t* _priority_queue_it_value(priority_queue_t* qu, priority_que
 	return it;
 }
 
-void _priority_queue_it_next(priority_queue_it_t** it) {
+priority_queue_it_t* _priority_queue_it_next(priority_queue_it_t* it) {
 	// Error check
-	if (!it | !(*it)) { return; }
+	if (!it) { return NULL; }
 
 	// Find the next valid position in the buffer
-	priority_queue_it_t* _it = *it;
-	priority_queue_t* _qu = _it->_qu;
-	if (_it->_index > 0) {
+	priority_queue_t* _qu = it->_qu;
+	if (it->_index > 0) {
 		// Record next positions data
-		_it->_index--;
-		_it->data = _priority_queue_data_pos(_qu, _it->_index);
-		_it->value = _priority_queue_value(_qu, _it->_index);
+		it->_index--;
+		it->data = _priority_queue_data_pos(_qu, it->_index);
+		it->value = _priority_queue_value(_qu, it->_index);
+		return it;
 	}
 	else {
 		// End reached, invalidate iterator
-		free(_it);
-		(*it) = NULL;
+		free(it);
+		return NULL;
+	}
+}
+
+priority_queue_it_t* _priority_queue_it_prev(priority_queue_it_t* it) {
+	// Error check
+	if (!it) { return NULL; }
+
+	// Find the next valid position in the buffer
+	priority_queue_t* _qu = it->_qu;
+	if (it->_index < _qu->_length) {
+		// Record next positions data
+		it->_index++;
+		it->data = _priority_queue_data_pos(_qu, it->_index);
+		it->value = _priority_queue_value(_qu, it->_index);
+		return it;
+	}
+	else {
+		// End reached, invalidate iterator
+		free(it);
+		return NULL;
+	}
+}
+
+#define strappend(dest, dest_size, dest_len, src) \
+do { \
+	size_t _src_len_ = strlen(src); \
+	memcpy_s(dest + dest_len, dest_size - dest_len, src, _src_len_); \
+	dest_len += _src_len_; \
+} while(0)
+
+char* _priority_queue_print(priority_queue_t* qu) {
+	// Allocate output buffer
+	char* buff;
+	size_t buff_size = (qu->_element_size * 8);
+	size_t buff_len = 0;
+	buff = calloc(buff_size, sizeof *buff);
+	if (!buff) { return NULL; }
+
+	// Error check
+	if (!qu) { goto _priority_queue_print_fail; }
+	if (qu->_length == 0) {
+		memcpy_s(buff, buff_size, "[]0", 3);
+		return buff;
 	}
 
-	return;
+	// Iterate through container
+	memcpy_s(buff, buff_size, "[", 1);
+	buff_len = 1;
+	for(priority_queue_it_t* it = priority_queue_it_begin(qu); it; priority_queue_it_next(it)) {
+		// Print value
+		char value_buff[16];
+		sprintf_s(value_buff, 16, "%d", it->value);
+		strappend(buff, buff_size, buff_len, value_buff);
+		strappend(buff, buff_size, buff_len, ":");
+
+		// Print data
+		char data_buff[32];
+		long data = *(long*)(it->data);
+		sprintf_s(data_buff, 32, "%d", data);
+		strappend(buff, buff_size, buff_len, "0x");
+		strappend(buff, buff_size, buff_len, data_buff);
+		strappend(buff, buff_size, buff_len, ", ");
+
+		// Reisze buffer if needed
+		if (buff_len > (buff_size / 2)) {
+			buff_size *= 2;
+			char* buff_temp = realloc(buff, buff_size);
+			if (!buff_temp) {  goto _priority_queue_print_fail; }
+			buff = buff_temp;
+		}
+	}
+
+	// Finish string
+	char count_buff[16];
+	sprintf_s(count_buff, 16, "%d", (int)qu->_length);
+	strappend(buff, buff_size, buff_len, "]");
+	strappend(buff, buff_size, buff_len, count_buff);
+	strappend(buff, buff_size, buff_len, "\0");
+
+	return buff;
+_priority_queue_print_fail:
+	free(buff);
+	return NULL;
 }
+
+#undef strappend

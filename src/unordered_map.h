@@ -73,7 +73,7 @@ typedef uint32_t _umap_hash_t;
 
 /// @brief Move the iterator to the next element.
 /// @param i Iterator pointer
-#define unordered_map_it_next(i) _umap_it_next(&i)
+#define unordered_map_it_next(i) _umap_it_next(i)
 
 /// @brief Get the size of the map in memory.
 /// @param u Map pointer
@@ -114,6 +114,6 @@ void* _umap_find(unordered_map_t*, _umap_key_t);
 
 unordered_map_it_t* _umap_it(unordered_map_t*);
 
-void _umap_it_next(unordered_map_it_t**);
+unordered_map_it_t* _umap_it_next(unordered_map_it_t*);
 
 #endif  // CC_STD_UMAP_H

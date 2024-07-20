@@ -162,9 +162,10 @@ void* _umap_str_find(unordered_map_str_t* umap_str, _umap_str_key_t key) {
 	// Hash key again
 	_umap_str_hash_t h = _umap_str_hash(key);
 	size_t pos = _umap_str_h1(h) & (umap_str->_capacity - 1);
+	size_t first_pos = pos;
 
 	// Linear probe to find key
-	while (1) {
+	do {
 		uint8_t* ctrl = _umap_str_ctrl(umap_str, pos);
 		// Check if this control byte matches lower byte of hash
 		_umap_str_hash_t h2 = _umap_str_h2(h);
@@ -182,7 +183,8 @@ void* _umap_str_find(unordered_map_str_t* umap_str, _umap_str_key_t key) {
 			// Look at next control byte
 			pos = (pos + 1) & (umap_str->_capacity - 1);
 		}
-	}
+	} while (pos != first_pos);
+	return NULL;
 }
 
 unordered_map_str_it_t* _umap_str_it(unordered_map_str_t* umap_str) {
@@ -202,36 +204,34 @@ unordered_map_str_it_t* _umap_str_it(unordered_map_str_t* umap_str) {
 	return it;
 }
 
-void _umap_str_it_next(unordered_map_str_it_t** it) {
+unordered_map_str_it_t* _umap_str_it_next(unordered_map_str_it_t* it) {
 	// Error check
-	if (!it | !(*it)) { return; }
+	if (!it) { return NULL; }
 
 	// Find the next valid position in the buffer
-	unordered_map_str_it_t* _it = *it;
 	uint8_t* ctrl = NULL;
-	unordered_map_str_t* _umap_str = _it->_umap_str;
+	unordered_map_str_t* _umap_str = it->_umap_str;
 	do {
 		// Increment index
-		_it->_index++;
+		it->_index++;
 
 		// Reached the end of the array
-		if (_it->_index >= _umap_str->_capacity) {
-			free(_it);
-			(*it) = NULL;
+		if (it->_index >= _umap_str->_capacity) {
 			break;
 		}
 
 		// Evaluate control byte
-		ctrl = _umap_str_ctrl(_umap_str, _it->_index);
+		ctrl = _umap_str_ctrl(_umap_str, it->_index);
 		if (!(*ctrl & _UMAP_STR_EMPTY)) {
 			// Index contains data
-			_it->key = *_umap_str_node_key(_umap_str, _it->_index);
-			_it->data = _umap_str_node_data(_umap_str, _it->_index);
-			break;
+			it->key = *_umap_str_node_key(_umap_str, it->_index);
+			it->data = _umap_str_node_data(_umap_str, it->_index);
+			return it;
 		}
 	} while(1);
 
-	return;
+	free(it);
+	return NULL;
 }
 
 void _umap_str_destroy(unordered_map_str_t* umap_str) {
