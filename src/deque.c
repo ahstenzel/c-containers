@@ -1,4 +1,5 @@
-#include "deque.h"
+#include "cc/deque.h"
+#include <math.h>
 
 size_t _deque_size(size_t element_size, size_t capacity) {
 	size_t c = element_size * capacity;
@@ -9,7 +10,7 @@ size_t _deque_size(size_t element_size, size_t capacity) {
 deque_t* _deque_factory(size_t element_size, size_t capacity) {
 	size_t buffer_size = _deque_size(element_size, capacity);
 	if (buffer_size == 0) { return NULL; }
-	deque_t* qu = calloc(1, buffer_size);
+	deque_t* qu = CC_CALLOC(1, buffer_size);
 	if (!qu) { return NULL; }
 	qu->_capacity = capacity;
 	qu->_element_size = element_size;
@@ -43,7 +44,7 @@ deque_t* _deque_resize(deque_t* qu, size_t new_capacity) {
 	new_qu->_head = 0;
 	new_qu->_tail = qu->_length;
 	new_qu->_length = qu->_length;
-	free(qu);
+	CC_FREE(qu);
 	return new_qu;
 }
 

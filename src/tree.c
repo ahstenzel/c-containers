@@ -1,5 +1,6 @@
-#include "tree.h"
-#include "string.h"
+#include "cc/tree.h"
+#include <string.h>
+#include <math.h>
 
 _tree_node_t* _tree_find_node(tree_t* tree, _tree_node_t* node, _tree_node_t** parent, size_t* child_idx, int force, char* key, char* sep) {
 	char* ctx;
@@ -29,31 +30,31 @@ _tree_node_t* _tree_find_node(tree_t* tree, _tree_node_t* node, _tree_node_t** p
 			if (force == 0) { return NULL; }
 
 			// Create a new node
-			_tree_node_t* new_node = calloc(1, sizeof *new_node);
+			_tree_node_t* new_node = CC_CALLOC(1, sizeof *new_node);
 			if (!new_node) { return NULL; }
 
 			new_node->_key = strdup(pch);
 			if (!new_node->_key) {
-				free(new_node);
+				CC_FREE(new_node);
 				return NULL;
 			}
 
-			new_node->_buffer = calloc(1, tree->_element_size);
+			new_node->_buffer = CC_CALLOC(1, tree->_element_size);
 			if (!new_node->_buffer) {
-				free(new_node->_key);
-				free(new_node);
+				CC_FREE(new_node->_key);
+				CC_FREE(new_node);
 				return NULL;
 			}
 
-			_tree_node_t** new_children = calloc(node->_num_children + 1, sizeof *new_children);
+			_tree_node_t** new_children = CC_CALLOC(node->_num_children + 1, sizeof *new_children);
 			if (!new_children) {
-				free(new_node->_key);
-				free(new_node->_buffer);
-				free(new_node);
+				CC_FREE(new_node->_key);
+				CC_FREE(new_node->_buffer);
+				CC_FREE(new_node);
 				return NULL; 
 			}
 			memcpy_s(new_children, sizeof *new_children * (node->_num_children + 1), node->_children, sizeof *new_children * node->_num_children);
-			free(node->_children);
+			CC_FREE(node->_children);
 			node->_children = new_children;
 			node->_children[node->_num_children] = new_node;
 			node->_num_children++;
@@ -68,18 +69,18 @@ _tree_node_t* _tree_find_node(tree_t* tree, _tree_node_t* node, _tree_node_t** p
 }
 
 tree_t* _tree_factory(size_t element_size, int string) {
-	tree_t* tree = calloc(1, sizeof *tree);
+	tree_t* tree = CC_CALLOC(1, sizeof *tree);
 	if (!tree) { return NULL; }
 	tree->_element_size = element_size;
-	tree->_root = calloc(1, sizeof *(tree->_root));
+	tree->_root = CC_CALLOC(1, sizeof *(tree->_root));
 	if (!tree->_root) { 
-		free(tree);
+		CC_FREE(tree);
 		return NULL;
 	}
 	tree->_root->_key = strdup("(root)");
 	if (!tree->_root->_key) {
-		free(tree->_root);
-		free(tree);
+		CC_FREE(tree->_root);
+		CC_FREE(tree);
 		return NULL;
 	}
 	tree->_length = 1;
@@ -92,7 +93,7 @@ void _tree_destroy(tree_t* tree) {
 	if (!tree || tree->_length == 0) { return; }
 	
 	_tree_delete(tree, NULL, NULL);
-	free(tree);
+	CC_FREE(tree);
 	return;
 }
 
@@ -104,7 +105,7 @@ void _tree_clear(tree_t* tree) {
 	_tree_delete(tree, NULL, NULL);
 
 	// Create a new root
-	tree->_root = calloc(1, sizeof *(tree->_root));
+	tree->_root = CC_CALLOC(1, sizeof *(tree->_root));
 	if (!tree->_root) { 
 		_tree_destroy(tree);
 		return; 
@@ -147,8 +148,8 @@ void _tree_delete(tree_t* tree, char* key, char* sep) {
 	size_t stack_size = 0;
 	size_t vec_capacity = stack_capacity;
 	size_t vec_size = 0;
-	stack = calloc(stack_capacity, sizeof *stack);
-	vec = calloc(vec_capacity, sizeof *vec);
+	stack = CC_CALLOC(stack_capacity, sizeof *stack);
+	vec = CC_CALLOC(vec_capacity, sizeof *vec);
 	if (!vec || !stack) { goto tree_delete_end; }
 	stack[stack_size++] = node;
 	while(stack_size > 0) {
@@ -162,10 +163,10 @@ void _tree_delete(tree_t* tree, char* key, char* sep) {
 	// Delete all nodes in the subtree
 	for(size_t i=0; i<vec_size; ++i) {
 		_tree_node_t* v = vec[i];
-		free(v->_children);
-		free(v->_key);
-		free(v->_buffer);
-		free(v);
+		CC_FREE(v->_children);
+		CC_FREE(v->_key);
+		CC_FREE(v->_buffer);
+		CC_FREE(v);
 		tree->_length--;
 	}
 	if (parent) {
@@ -177,8 +178,8 @@ void _tree_delete(tree_t* tree, char* key, char* sep) {
 	}
 	
 tree_delete_end:
-	free(stack);
-	free(vec);
+	CC_FREE(stack);
+	CC_FREE(vec);
 	return;
 }
 
@@ -206,7 +207,7 @@ int _tree_depth(tree_t* tree, char* key, char* sep) {
 	size_t queue_capacity = tree->_length;
 	size_t queue_head = 0;
 	size_t queue_tail = 0;
-	queue = calloc(queue_capacity, sizeof *queue);
+	queue = CC_CALLOC(queue_capacity, sizeof *queue);
 	if (!queue) { goto tree_depth_end; }
 
 	queue[queue_tail++] = node;
@@ -219,7 +220,7 @@ int _tree_depth(tree_t* tree, char* key, char* sep) {
 	}
 
 tree_depth_end:
-	free(queue);
+	CC_FREE(queue);
 	return depth;
 }
 
@@ -229,7 +230,7 @@ char* _tree_print(_tree_node_t* node, size_t level) {
 	char* str = NULL;
 	size_t key_len = strlen(node->_key);
 	size_t len = key_len + (level * 2) + 1;
-	str = calloc(len, sizeof *str);
+	str = CC_CALLOC(len, sizeof *str);
 	if (!str) { return NULL; }
 	for(size_t i=0; i<level; ++i) {
 		if (i == level - 1) {
@@ -246,17 +247,17 @@ char* _tree_print(_tree_node_t* node, size_t level) {
 		char* child = _tree_print(node->_children[i], level + 1);
 		size_t child_len = strlen(child);
 		size_t cat_len = len + child_len + 1;
-		char* cat = calloc(cat_len, sizeof *cat);
+		char* cat = CC_CALLOC(cat_len, sizeof *cat);
 		if (!cat) { 
-			free(child);
-			free(str);
+			CC_FREE(child);
+			CC_FREE(str);
 			return NULL; 
 		}
 		strcat_s(cat, cat_len, str);
 		strcat_s(cat, cat_len, "\n");
 		strcat_s(cat, cat_len, child);
-		free(str);
-		free(child);
+		CC_FREE(str);
+		CC_FREE(child);
 		str = cat;
 		len = cat_len;
 	}
@@ -269,7 +270,7 @@ size_t _tree_serialize(tree_t* tree, char* str) {
 
 	// Build string metadata block
 	size_t len = 24;
-	str = calloc(TREE_SERIALIZE_MAX_LEN, sizeof *str);
+	str = CC_CALLOC(TREE_SERIALIZE_MAX_LEN, sizeof *str);
 	if (!str) { goto tree_serialize_fail; }
 	char* pch = str + 8;
 	itoa_s((int)tree_length(tree), pch, TREE_SERIALIZE_MAX_LEN, 10);
@@ -284,7 +285,7 @@ size_t _tree_serialize(tree_t* tree, char* str) {
 	_tree_node_t** stack = NULL;
 	size_t stack_capacity = tree->_length * 2;
 	size_t stack_size = 0;
-	stack = calloc(stack_capacity, sizeof *stack);
+	stack = CC_CALLOC(stack_capacity, sizeof *stack);
 	if (!stack) { goto tree_serialize_fail; }
 	stack[stack_size++] = node;
 	while(stack_size > 0) {
@@ -331,7 +332,7 @@ size_t _tree_serialize(tree_t* tree, char* str) {
 	return len;
 
 tree_serialize_fail:
-	free(str);
+	CC_FREE(str);
 	return 0;
 }
 

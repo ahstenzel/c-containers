@@ -1,10 +1,10 @@
-#ifndef CC_STD_STACK_H
-#define CC_STD_STACK_H
 /**
  * stack.h
  * LIFO group of elements.
 */
-#include "utilities.h"
+#ifndef CC_STD_STACK_H
+#define CC_STD_STACK_H
+#include "cc/common.h"
 
 #ifndef STACK_DEFAULT_CAPACITY
 #define STACK_DEFAULT_CAPACITY 1ULL
@@ -22,7 +22,7 @@
 
 /// @brief Deallocate a stack.
 /// @param s Stack pointer
-#define stack_destroy(s) free(s)
+#define stack_destroy(s) CC_FREE(s)
 
 /// @brief Get the top element of the stack.
 /// @param s Stack pointer

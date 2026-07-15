@@ -1,10 +1,10 @@
-#ifndef CC_STD_DEQUEUE_H
-#define CC_STD_DEQUEUE_H
 /*
  * deque.h
  * Double-ended queue.
  */
-#include "utilities.h"
+#ifndef CC_STD_DEQUEUE_H
+#define CC_STD_DEQUEUE_H
+#include "cc/common.h"
 
 #ifndef DEQUE_DEFAULT_CAPACITY
 #define DEQUE_DEFAULT_CAPACITY 1ULL
@@ -22,7 +22,7 @@
 
 /// @brief Deallocate a deque.
 /// @param q Dequeue pointer.
-#define deque_destroy(q) free(q)
+#define deque_destroy(q) CC_FREE(q)
 
 /// @brief Get the front element of the deque.
 /// @param q Dequeue pointer

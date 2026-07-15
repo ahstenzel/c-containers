@@ -1,4 +1,5 @@
-#include "free_list.h"
+#include "cc/free_list.h"
+#include <math.h>
 
 size_t _free_list_buffer_size(size_t element_size, size_t capacity) {
 	size_t c = element_size * capacity;
@@ -11,7 +12,7 @@ free_list_t* _free_list_factory(size_t element_size, size_t capacity) {
 	size_t buffer_size = _free_list_buffer_size(element_size, capacity);
 	if (buffer_size == 0) { return NULL; }
 	//size_t object_size = offsetof(free_list_t, _buffer) + ((capacity/8)+1) + buffer_size;
-	free_list_t* list = calloc(buffer_size, 1);
+	free_list_t* list = CC_CALLOC(buffer_size, 1);
 	if (!list) { return NULL; }
 	list->_capacity = capacity;
 	list->_element_size = element_size;
@@ -35,12 +36,9 @@ free_list_t* _free_list_resize(free_list_t* list, size_t new_capacity) {
 	size_t data_dest_size = list->_capacity * list->_element_size;
 	memcpy_s(_free_list_pos(new_list, 0), data_dest_size, _free_list_pos(list, 0), data_dest_size);
 
-	//size_t dest_size = list->_length * list->_element_size;
-	//memcpy_s(new_list->_buffer, dest_size, list->_buffer, dest_size);
-
 	new_list->_length = list->_length;
 	new_list->_next_free = list->_next_free;
-	free(list);
+	CC_FREE(list);
 	return new_list;
 }
 
@@ -101,7 +99,7 @@ free_list_it_t* _free_list_it(free_list_t* list) {
 
 	// Construct iterator
 	size_t buffer_size = sizeof(free_list_it_t);
-	free_list_it_t* it = calloc(buffer_size, 1);
+	free_list_it_t* it = CC_CALLOC(buffer_size, 1);
 	if (!it) { return NULL; }
 	it->index = SIZE_MAX;
 	it->_list = list;
@@ -133,6 +131,6 @@ free_list_it_t* _free_list_it_next(free_list_it_t* it) {
 		}
 	} while(1);
 
-	free(it);
+	CC_FREE(it);
 	return NULL;
 }

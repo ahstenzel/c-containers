@@ -1,4 +1,5 @@
-#include "priority_queue.h"
+#include "cc/priority_queue.h"
+#include <math.h>
 
 size_t _priority_queue_size(size_t element_size, size_t capacity) {
 	size_t c = element_size * capacity;
@@ -11,7 +12,7 @@ size_t _priority_queue_size(size_t element_size, size_t capacity) {
 priority_queue_t* _priority_queue_factory(size_t element_size, size_t capacity) {
 	size_t buffer_size = _priority_queue_size(element_size, capacity);
 	if (buffer_size == 0) { return NULL; }
-	priority_queue_t* qu = calloc(1, buffer_size);
+	priority_queue_t* qu = CC_CALLOC(1, buffer_size);
 	if (!qu) { return NULL; }
 	qu->_capacity = capacity;
 	qu->_element_size = element_size;
@@ -35,7 +36,7 @@ priority_queue_t* _priority_queue_resize(priority_queue_t* qu, size_t new_capaci
 	memcpy_s(_priority_queue_data_pos(new_qu, 0), data_dest_size, _priority_queue_data_pos(qu, 0), data_dest_size);
 
 	new_qu->_length = qu->_length;
-	free(qu);
+	CC_FREE(qu);
 	_priority_queue_sort(new_qu);
 	return new_qu;
 }
@@ -103,7 +104,7 @@ void _priority_queue_sort(priority_queue_t* qu) {
 	// Insertion sort
 	size_t dest_elem_size = qu->_element_size;
 	size_t dest_value_size = sizeof(priority_queue_value_t);
-	void* tmp_data = malloc(qu->_element_size);
+	void* tmp_data = CC_MALLOC(qu->_element_size);
 	priority_queue_value_t tmp_value = 0;
 	for(size_t i=1; i<qu->_length; ++i) {
 		// Copy element to temp buffer
@@ -122,7 +123,7 @@ void _priority_queue_sort(priority_queue_t* qu) {
 		memcpy_s(_priority_queue_value_pos(qu, j), dest_value_size, &tmp_value, dest_value_size);
 	}
 	// Free temp buffer
-	free(tmp_data);
+	CC_FREE(tmp_data);
 }
 
 size_t _priority_queue_find_index(priority_queue_t* qu, priority_queue_value_t value, void* data) {
@@ -190,7 +191,7 @@ priority_queue_it_t* _priority_queue_it(priority_queue_t* qu, bool begin) {
 
 	// Construct iterator
 	size_t buffer_size = sizeof(priority_queue_it_t);
-	priority_queue_it_t* it = calloc(1, buffer_size);
+	priority_queue_it_t* it = CC_CALLOC(1, buffer_size);
 	if (!it) { return NULL; }
 
 	// Find first valid entry in map
@@ -209,11 +210,11 @@ priority_queue_it_t* _priority_queue_it_value(priority_queue_t* qu, priority_que
 
 	// Construct iterator
 	size_t buffer_size = sizeof(priority_queue_it_t);
-	priority_queue_it_t* it = calloc(1, buffer_size);
+	priority_queue_it_t* it = CC_CALLOC(1, buffer_size);
 	if (!it) { return NULL; }
 	it->_index = _priority_queue_find_index(qu, value, NULL);
 	if (it->_index == qu->_capacity) {
-		free(it);
+		CC_FREE(it);
 		return NULL;
 	}
 	it->_qu = qu;
@@ -235,7 +236,7 @@ priority_queue_it_t* _priority_queue_it_next(priority_queue_it_t* it) {
 	}
 	else {
 		// End reached, invalidate iterator
-		free(it);
+		CC_FREE(it);
 		return NULL;
 	}
 }
@@ -255,7 +256,7 @@ priority_queue_it_t* _priority_queue_it_prev(priority_queue_it_t* it) {
 	}
 	else {
 		// End reached, invalidate iterator
-		free(it);
+		CC_FREE(it);
 		return NULL;
 	}
 }
@@ -272,7 +273,7 @@ char* _priority_queue_print(priority_queue_t* qu) {
 	char* buff;
 	size_t buff_size = (qu->_element_size * 8);
 	size_t buff_len = 0;
-	buff = calloc(buff_size, sizeof *buff);
+	buff = CC_CALLOC(buff_size, sizeof *buff);
 	if (!buff) { return NULL; }
 
 	// Error check
@@ -318,7 +319,7 @@ char* _priority_queue_print(priority_queue_t* qu) {
 
 	return buff;
 _priority_queue_print_fail:
-	free(buff);
+	CC_FREE(buff);
 	return NULL;
 }
 

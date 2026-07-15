@@ -1,4 +1,5 @@
-#include "unordered_map.h"
+#include "cc/unordered_map.h"
+#include <math.h>
 
 size_t _umap_node_size(size_t element_size) {
 	size_t key_size = sizeof(_umap_key_t);
@@ -17,7 +18,7 @@ size_t _umap_size(size_t element_size, size_t capacity) {
 unordered_map_t* _umap_factory(size_t element_size, size_t capacity) {
 	size_t buffer_size = _umap_size(element_size, capacity);
 	if (buffer_size == 0) { return NULL; }
-	unordered_map_t* umap = calloc(1, buffer_size);
+	unordered_map_t* umap = CC_CALLOC(1, buffer_size);
 	if (!umap) { return NULL; }
 	umap->_capacity = capacity;
 	umap->_element_size = element_size;
@@ -48,7 +49,7 @@ unordered_map_t* _umap_resize(unordered_map_t* umap, size_t new_capacity) {
 	}
 
 	// Return new map
-	free(umap);
+	CC_FREE(umap);
 	return new_umap;
 }
 
@@ -86,7 +87,7 @@ void* _umap_insert(unordered_map_t** umap, _umap_key_t key, void* data) {
 		uint8_t* ctrl = _umap_ctrl(_umap, pos);
 		// Space is empty if high bit is 1
 		if ((*ctrl) & _UMAP_EMPTY) {
-			// Save lower 8 bits of hash to the control block
+			// Save lower 7 bits of hash to the control block
 			_umap_hash_t h2 = _umap_h2(h);
 			memcpy_s(ctrl, 1, &h2, 1);
 
@@ -183,7 +184,7 @@ unordered_map_it_t* _umap_it(unordered_map_t* umap) {
 
 	// Construct iterator
 	size_t buffer_size = sizeof(unordered_map_it_t);
-	unordered_map_it_t* it = calloc(1, buffer_size);
+	unordered_map_it_t* it = CC_CALLOC(1, buffer_size);
 	if (!it) { return NULL; }
 	it->_index = SIZE_MAX;
 	it->_umap = umap;
@@ -219,6 +220,6 @@ unordered_map_it_t* _umap_it_next(unordered_map_it_t* it) {
 		}
 	} while(1);
 
-	free(it);
+	CC_FREE(it);
 	return NULL;
 }

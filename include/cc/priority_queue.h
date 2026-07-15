@@ -1,10 +1,11 @@
-#ifndef CC_STD_PRIORITY_QUEUE_H
-#define CC_STD_PRIORITY_QUEUE_H
 /**
  * priority_queue.h
  * Sorted queue of value-data pairs.
 */
-#include "utilities.h"
+#ifndef CC_STD_PRIORITY_QUEUE_H
+#define CC_STD_PRIORITY_QUEUE_H
+#include "cc/common.h"
+#include <stdbool.h>
 
 typedef int32_t priority_queue_value_t;
 
@@ -26,7 +27,7 @@ typedef int32_t priority_queue_value_t;
 
 /// @brief Deallocate a priority queue.
 /// @param q Priority queue pointer
-#define priority_queue_destroy(q) free(q)
+#define priority_queue_destroy(q) CC_FREE(q)
 
 /// @brief Get the top element in the priority queue.
 /// @param q Priority queue pointer

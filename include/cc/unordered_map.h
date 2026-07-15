@@ -1,11 +1,11 @@
-#ifndef CC_STD_UMAP_H
-#define CC_STD_UMAP_H
 /**
  * unordered_map.h
  * Hash table of key-value pairs.
  * Implemented as a simplified Swiss Table architecture.
 */
-#include "utilities.h"
+#ifndef CC_STD_UMAP_H
+#define CC_STD_UMAP_H
+#include "cc/common.h"
 
 typedef uint32_t _umap_key_t;
 typedef uint32_t _umap_hash_t;
@@ -37,7 +37,7 @@ typedef uint32_t _umap_hash_t;
 
 /// @brief Deallocate an unordered map.
 /// @param u Map pointer
-#define unordered_map_destroy(u) free(u)
+#define unordered_map_destroy(u) CC_FREE(u)
 
 /// @brief Add a new element to the map if it does not already exist.
 /// @param u Map pointer

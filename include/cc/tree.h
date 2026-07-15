@@ -1,10 +1,10 @@
-#ifndef CC_STD_TREE_H
-#define CC_STD_TREE_H
 /**
  * tree.h
  * Unbalanced tree of string nodes.
 */
-#include "utilities.h"
+#ifndef CC_STD_TREE_H
+#define CC_STD_TREE_H
+#include "cc/common.h"
 
 #define TREE_FLAG_STR   0b10000000
 #ifndef TREE_SERIALIZE_MAX_LEN

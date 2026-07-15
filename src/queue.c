@@ -1,4 +1,5 @@
-#include "queue.h"
+#include "cc/queue.h"
+#include <math.h>
 
 size_t _queue_size(size_t element_size, size_t capacity) {
 	size_t c = element_size * capacity;
@@ -9,7 +10,7 @@ size_t _queue_size(size_t element_size, size_t capacity) {
 queue_t* _queue_factory(size_t element_size, size_t capacity) {
 	size_t buffer_size = _queue_size(element_size, capacity);
 	if (buffer_size == 0) { return NULL; }
-	queue_t* qu = calloc(1, buffer_size);
+	queue_t* qu = CC_CALLOC(1, buffer_size);
 	if (!qu) { return NULL; }
 	qu->_capacity = capacity;
 	qu->_element_size = element_size;
@@ -43,7 +44,7 @@ queue_t* _queue_resize(queue_t* qu, size_t new_capacity) {
 	new_qu->_head = 0;
 	new_qu->_tail = qu->_length;
 	new_qu->_length = qu->_length;
-	free(qu);
+	CC_FREE(qu);
 	return new_qu;
 }
 

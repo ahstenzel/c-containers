@@ -1,11 +1,11 @@
-#ifndef CC_STD_UMAP_STR_H
-#define CC_STD_UMAP_STR_H
 /**
  * unordered_map_str.h
  * Hash table of key-value pairs with string keys.
  * Implemented as a simplified Swiss Table architecture.
 */
-#include "utilities.h"
+#ifndef CC_STD_UMAP_STR_H
+#define CC_STD_UMAP_STR_H
+#include "cc/common.h"
 
 typedef char* _umap_str_key_t;
 typedef uint32_t _umap_str_hash_t;

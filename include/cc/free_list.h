@@ -1,10 +1,10 @@
-#ifndef CC_STD_FREE_LIST_H
-#define CC_STD_FREE_LIST_H
 /**
  * free_list.h
  * List of elements that fills in empty slots first.
 */
-#include "utilities.h"
+#ifndef CC_STD_FREE_LIST_H
+#define CC_STD_FREE_LIST_H
+#include "cc/common.h"
 
 #ifndef FREE_LIST_DEFAULT_CAPACITY
 #define FREE_LIST_DEFAULT_CAPACITY 8ULL
@@ -26,7 +26,7 @@
 
 /// @brief Deallocate a list.
 /// @param l List pointer
-#define free_list_destroy(l) free(l);
+#define free_list_destroy(l) CC_FREE(l);
 
 /// @brief Get an element from the list.
 /// @param l List pointer

@@ -1,10 +1,10 @@
-#ifndef CC_STD_VECTOR_H
-#define CC_STD_VECTOR_H
 /**
  * vector.h
  * Dynamically resizing array.
 */
-#include "utilities.h"
+#ifndef CC_STD_VECTOR_H
+#define CC_STD_VECTOR_H
+#include "cc/common.h"
 
 #ifndef VECTOR_DEFAULT_CAPACITY
 #define VECTOR_DEFAULT_CAPACITY 1ULL
@@ -28,7 +28,7 @@
 
 /// @brief Deallocate a vector.
 /// @param v Vector pointer
-#define vector_destroy(v) free(v)
+#define vector_destroy(v) CC_FREE(v)
 
 /// @brief Get an element from the vector.
 /// @param v Vector pointer

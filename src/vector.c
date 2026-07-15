@@ -1,4 +1,5 @@
-#include "vector.h"
+#include "cc/vector.h"
+#include <math.h>
 
 size_t _vec_size(size_t element_size, size_t capacity) {
 	size_t c = element_size * capacity;
@@ -9,7 +10,7 @@ size_t _vec_size(size_t element_size, size_t capacity) {
 vector_t* _vec_factory(size_t element_size, size_t capacity) {
 	size_t buffer_size = _vec_size(element_size, capacity);
 	if (buffer_size == 0) { return NULL; }
-	vector_t* vec = calloc(1, buffer_size);
+	vector_t* vec = CC_CALLOC(1, buffer_size);
 	if (!vec) { return NULL; }
 	vec->_capacity = capacity;
 	vec->_element_size = element_size;
@@ -30,7 +31,7 @@ vector_t* _vec_resize(vector_t* vec, size_t new_capacity) {
 	size_t dest_size = vec->_length * vec->_element_size;
 	memcpy_s(new_vec->_buffer, dest_size, vec->_buffer, dest_size);
 	new_vec->_length = vec->_length;
-	free(vec);
+	CC_FREE(vec);
 	return new_vec;
 }
 
@@ -91,12 +92,12 @@ void _vec_swap(vector_t* vec, size_t a, size_t b) {
 	// Swap elements with temp buffer
 	uint8_t* pos_a = _vec_pos(vec, a);
 	uint8_t* pos_b = _vec_pos(vec, b);
-	uint8_t* _tmp_buffer = malloc(vec->_element_size);
+	uint8_t* _tmp_buffer = CC_MALLOC(vec->_element_size);
 	if (!_tmp_buffer) { return; }
 	memmove_s(_tmp_buffer, vec->_element_size, pos_a, vec->_element_size);
 	memmove_s(pos_a, vec->_element_size, pos_b, vec->_element_size);
 	memmove_s(pos_b, vec->_element_size, _tmp_buffer, vec->_element_size);
-	free(_tmp_buffer);
+	CC_FREE(_tmp_buffer);
 }
 
 void _vec_sort(vector_t* vec) {

@@ -1,10 +1,10 @@
-#ifndef CC_STD_QUEUE_H
-#define CC_STD_QUEUE_H
 /**
  * queue.h
  * FIFO group of elements.
 */
-#include "utilities.h"
+#ifndef CC_STD_QUEUE_H
+#define CC_STD_QUEUE_H
+#include "cc/common.h"
 
 #ifndef QUEUE_DEFAULT_CAPACITY
 #define QUEUE_DEFAULT_CAPACITY 1ULL
@@ -22,7 +22,7 @@
 
 /// @brief Deallocate a queue.
 /// @param q Queue pointer
-#define queue_destroy(q) free(q)
+#define queue_destroy(q) CC_FREE(q)
 
 /// @brief Get the front element of the queue.
 /// @param q Queue pointer

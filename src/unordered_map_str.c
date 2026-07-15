@@ -1,4 +1,6 @@
-#include "unordered_map_str.h"
+#include "cc/unordered_map_str.h"
+#include <string.h>
+#include <math.h>
 
 size_t _umap_str_node_size(size_t element_size) {
 	size_t key_size = sizeof(_umap_str_key_t);
@@ -17,7 +19,7 @@ size_t _umap_str_size(size_t element_size, size_t capacity) {
 unordered_map_str_t* _umap_str_factory(size_t element_size, size_t capacity) {
 	size_t buffer_size = _umap_str_size(element_size, capacity);
 	if (buffer_size == 0) { return NULL; }
-	unordered_map_str_t* umap_str = calloc(1, buffer_size);
+	unordered_map_str_t* umap_str = CC_CALLOC(1, buffer_size);
 	if (!umap_str) { return NULL; }
 	umap_str->_capacity = capacity;
 	umap_str->_element_size = element_size;
@@ -48,7 +50,7 @@ unordered_map_str_t* _umap_str_resize(unordered_map_str_t* umap_str, size_t new_
 	}
 
 	// Return new map
-	free(umap_str);
+	CC_FREE(umap_str);
 	return new_umap_str;
 }
 
@@ -91,15 +93,14 @@ void* _umap_str_insert(unordered_map_str_t** umap_str, _umap_str_key_t key, void
 		if ((*ctrl) & _UMAP_STR_EMPTY) {
 			// Copy the key to a new buffer
 			size_t dest_size = strlen(key) + 1;
-			_umap_str_key_t dest = malloc(dest_size);
+			_umap_str_key_t dest = CC_MALLOC(dest_size);
 			if (!dest) { return NULL; }
 			strcpy_s(dest, dest_size, key);
 
 			// Save the key to the start of the node block
-			//_umap_str_key_t* addr = _umap_str_node_key(_umap_str, pos);
 			memcpy_s(_umap_str_node_key(_umap_str, pos), sizeof(_umap_str_key_t), &dest, sizeof(_umap_str_key_t));
 
-			// Save lower 8 bits of hash to the control block
+			// Save lower 7 bits of hash to the control block
 			_umap_str_hash_t h2 = _umap_str_h2(h);
 			memcpy_s(ctrl, 1, &h2, 1);
 
@@ -139,7 +140,7 @@ void _umap_str_delete(unordered_map_str_t* umap_str, _umap_str_key_t key) {
 			// Verify key at this pos matches
 			if (strcmp(*_umap_str_node_key(umap_str, pos), key) == 0) {
 				memset(ctrl, _UMAP_STR_DELETED, 1);
-				free(*_umap_str_node_key(umap_str, pos));
+				CC_FREE(*_umap_str_node_key(umap_str, pos));
 				umap_str->_length--;
 				return;
 			}
@@ -193,7 +194,7 @@ unordered_map_str_it_t* _umap_str_it(unordered_map_str_t* umap_str) {
 
 	// Construct iterator
 	size_t buffer_size = sizeof(unordered_map_str_it_t);
-	unordered_map_str_it_t* it = malloc(buffer_size);
+	unordered_map_str_it_t* it = CC_MALLOC(buffer_size);
 	if (!it) { return NULL; }
 	memset(it, 0, buffer_size);
 	it->_index = SIZE_MAX;
@@ -230,7 +231,7 @@ unordered_map_str_it_t* _umap_str_it_next(unordered_map_str_it_t* it) {
 		}
 	} while(1);
 
-	free(it);
+	CC_FREE(it);
 	return NULL;
 }
 
@@ -242,10 +243,10 @@ void _umap_str_destroy(unordered_map_str_t* umap_str) {
 	for(size_t i = 0; i<umap_str->_capacity; ++i) {
 		uint8_t* ctrl = _umap_str_ctrl(umap_str, i);
 		if (!(*ctrl & _UMAP_STR_EMPTY)) {
-			free(*_umap_str_node_key(umap_str, i));
+			CC_FREE(*_umap_str_node_key(umap_str, i));
 		}
 	}
 
 	// Deallocate buffer
-	free(umap_str);
+	CC_FREE(umap_str);
 }
