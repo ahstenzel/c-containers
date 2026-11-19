@@ -105,7 +105,7 @@ free_list_it_t* _free_list_it(free_list_t* list) {
 	it->_list = list;
 
 	// Find first valid entry in list
-	_free_list_it_next(&it);
+	it = _free_list_it_next(it);
 	return it;
 }
 

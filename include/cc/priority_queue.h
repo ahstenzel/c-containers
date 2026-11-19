@@ -104,6 +104,15 @@ typedef int32_t priority_queue_value_t;
 /// @param i Iterator pointer
 #define priority_queue_it_prev(i) _priority_queue_it_prev(i)
 
+#ifdef CC_DEBUG
+
+/// @brief Convert the priority queue to a human-readable string.
+/// @param q Priority queue pointer
+/// @param s Destination string (must be freed later)
+#define priority_queue_print(q, s) s = (q) ? (_priority_queue_print(q)) : NULL
+
+#endif
+
 /// @brief List of elements sorted by priority.
 typedef struct {
 	size_t _length;
@@ -146,6 +155,10 @@ priority_queue_it_t* _priority_queue_it_next(priority_queue_it_t*);
 
 priority_queue_it_t* _priority_queue_it_prev(priority_queue_it_t*);
 
+#ifdef CC_DEBUG
+
 char* _priority_queue_print(priority_queue_t*);
+
+#endif
 
 #endif	// CC_STD_PRIORITY_QUEUE_H

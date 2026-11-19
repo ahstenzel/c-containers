@@ -261,6 +261,10 @@ priority_queue_it_t* _priority_queue_it_prev(priority_queue_it_t* it) {
 	}
 }
 
+#ifdef CC_DEBUG
+
+#include <stdio.h>
+
 #define strappend(dest, dest_size, dest_len, src) \
 do { \
 	size_t _src_len_ = strlen(src); \
@@ -289,14 +293,14 @@ char* _priority_queue_print(priority_queue_t* qu) {
 	for(priority_queue_it_t* it = priority_queue_it_begin(qu); it; priority_queue_it_next(it)) {
 		// Print value
 		char value_buff[16];
-		sprintf_s(value_buff, 16, "%d", it->value);
+		snprintf(value_buff, 16, "%d", it->value);
 		strappend(buff, buff_size, buff_len, value_buff);
 		strappend(buff, buff_size, buff_len, ":");
 
 		// Print data
 		char data_buff[32];
 		long data = *(long*)(it->data);
-		sprintf_s(data_buff, 32, "%d", data);
+		snprintf(data_buff, 32, "%d", data);
 		strappend(buff, buff_size, buff_len, "0x");
 		strappend(buff, buff_size, buff_len, data_buff);
 		strappend(buff, buff_size, buff_len, ", ");
@@ -324,3 +328,5 @@ _priority_queue_print_fail:
 }
 
 #undef strappend
+
+#endif

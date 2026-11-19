@@ -80,10 +80,14 @@
 /// @return Tree size
 #define tree_length(b) ((b)->_length - 1)
 
+#ifdef CC_DEBUG
+
 /// @brief Convert the tree and its keys to a human-readable string.
 /// @param b Tree pointer
 /// @param s Destination string (must be freed later)
 #define tree_print(b, s) s = (b) ? (_tree_print((b)->_root, 0)) : NULL
+
+#endif
 
 /// @brief Convert the tree and its keys to a serialized (not null-terminated) string.
 /// @param b Tree pointer
@@ -128,7 +132,11 @@ void _tree_delete(tree_t*, char*, char*);
 
 int _tree_depth(tree_t*, char*, char*);
 
+#ifdef CC_DEBUG
+
 char* _tree_print(_tree_node_t*, size_t);
+
+#endif
 
 size_t _tree_serialize(tree_t*, char*);
 

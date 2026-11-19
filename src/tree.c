@@ -224,6 +224,8 @@ tree_depth_end:
 	return depth;
 }
 
+#ifdef CC_DEBUG
+
 char* _tree_print(_tree_node_t* node, size_t level) {
 	// Build string for current node
 	if (!node) { return NULL; }
@@ -263,6 +265,8 @@ char* _tree_print(_tree_node_t* node, size_t level) {
 	}
 	return str;
 }
+
+#endif
 
 size_t _tree_serialize(tree_t* tree, char* str) {
 	// Error check
@@ -337,5 +341,5 @@ tree_serialize_fail:
 }
 
 void _tree_deserialize(tree_t* tree, char* str) {
-
+	// TODO
 }

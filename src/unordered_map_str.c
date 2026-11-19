@@ -201,7 +201,7 @@ unordered_map_str_it_t* _umap_str_it(unordered_map_str_t* umap_str) {
 	it->_umap_str = umap_str;
 	
 	// Find first valid entry in map
-	_umap_str_it_next(&it);
+	it = _umap_str_it_next(it);
 	return it;
 }
 
