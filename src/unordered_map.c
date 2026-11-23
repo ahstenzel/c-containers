@@ -68,7 +68,13 @@ void* _umap_insert(unordered_map_t** umap, _umap_key_t key, void* data) {
 	if (!umap || !(*umap)) { return NULL; }
 	unordered_map_t* _umap = *umap;
 	void* elem = _umap_find(_umap, key);
-	if (elem) { return elem; }
+	if (elem) { 
+		if (data) {
+			size_t dest_size = _umap->_element_size;
+			memcpy_s(elem, dest_size, data, dest_size);
+		}
+		return elem; 
+	}
 
 	// Resize if needed
 	if (_umap->_load_count / (float)_umap->_capacity >= _UMAP_DEFAULT_LOAD) {

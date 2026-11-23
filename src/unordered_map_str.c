@@ -72,7 +72,13 @@ void* _umap_str_insert(unordered_map_str_t** umap_str, _umap_str_key_t key, void
 	if (!umap_str || !(*umap_str)) { return NULL; }
 	unordered_map_str_t* _umap_str = *umap_str;
 	void* elem = _umap_str_find(_umap_str, key);
-	if (elem) { return elem; }
+	if (elem) { 
+		if (data) {
+			size_t dest_size = _umap_str->_element_size;
+			memcpy_s(elem, dest_size, data, dest_size);
+		}
+		return elem; 
+	}
 
 	// Resize if needed
 	if (_umap_str->_load_count / (float)_umap_str->_capacity >= _UMAP_STR_DEFAULT_LOAD) {
